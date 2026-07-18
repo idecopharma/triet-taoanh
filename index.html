@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>IDECO · Studio Tạo Ảnh AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#ee3a23; --red-dark:#c42a16;
+  --bg:#f7f5f2; --card:#ffffff; --line:#e6e1da;
+  --ink:#1b1b1f; --muted:#8a857d;
+  --canvas:#17171b; --canvas-2:#212127;
+  --ok:#1f9d55; --warn:#d97706;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Be Vietnam Pro',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+.mono{font-family:'JetBrains Mono',monospace}
+button{font:inherit;cursor:pointer}
+
+/* ============ MÀN HÌNH KHÓA ============ */
+#lock{position:fixed;inset:0;background:var(--canvas);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px}
+#lock .box{width:100%;max-width:340px;text-align:center}
+#lock img{height:52px;margin-bottom:18px}
+#lock h1{color:#fff;font-size:20px;font-weight:800;margin-bottom:4px}
+#lock h1 span{color:var(--red)}
+#lock p{color:#8a857d;font-size:13px;margin-bottom:26px}
+#lock input{width:100%;background:var(--canvas-2);border:1px solid #34343c;border-radius:14px;color:#fff;
+  padding:15px 16px;font:inherit;font-size:17px;text-align:center;letter-spacing:.12em;outline:none;transition:.2s}
+#lock input:focus{border-color:var(--red)}
+#lock button{width:100%;margin-top:12px;border:0;border-radius:14px;background:var(--red);color:#fff;
+  font-size:16px;font-weight:800;padding:15px 0;transition:.15s}
+#lock button:active{background:var(--red-dark)}
+#lockErr{color:#ff7a66;font-size:13px;margin-top:12px;min-height:18px}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.shake{animation:shake .4s}
+
+/* ============ APP ============ */
+#app{display:none;max-width:680px;margin:0 auto;padding:0 14px 120px}
+#app.on{display:block}
+
+header{display:flex;align-items:center;gap:10px;padding:16px 2px 12px;position:sticky;top:0;background:var(--bg);z-index:10}
+header img{height:30px}
+header .t{flex:1}
+header .t b{font-size:16px;font-weight:800;display:block;line-height:1.2}
+header .t b span{color:var(--red)}
+header .t small{font-size:11px;color:var(--muted)}
+.credit{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);
+  border-radius:999px;padding:7px 12px;font-size:12.5px;color:var(--muted)}
+.credit b{color:var(--ok);font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.dot.bad{background:var(--red)}
+
+.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px}
+.lbl{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+
+textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:#fdfcfa;
+  padding:12px 13px;font:inherit;font-size:15px;color:var(--ink);outline:none;min-height:96px;resize:vertical;line-height:1.5}
+textarea:focus{border-color:var(--red)}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:9px 0 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:#fdfcfa;border-radius:999px;padding:7px 13px;font-size:12.5px;color:var(--ink);white-space:nowrap}
+.chip.on{background:var(--red);border-color:var(--red);color:#fff}
+
+/* ẢNH THAM CHIẾU */
+.refs{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.slot{position:relative;aspect-ratio:1;border:1.5px dashed var(--line);border-radius:12px;background:#fdfcfa;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:11.5px;overflow:hidden}
+.slot .plus{font-size:22px;line-height:1;color:#c9c4bc}
+.slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.slot .x{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;border:0;
+  background:rgba(0,0,0,.62);color:#fff;font-size:13px;line-height:1;display:none;align-items:center;justify-content:center;z-index:2}
+.slot.filled{border-style:solid;border-color:var(--red)}
+.slot.filled .x{display:flex}
+.slot.filled .plus,.slot.filled span{display:none}
+.ref-hint{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.45}
+#fileInput{display:none}
+
+/* TÙY CHỌN */
+.optrow{display:flex;gap:9px}
+.optrow>div{flex:1}
+select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fdfcfa;
+  padding:11px 10px;font:inherit;font-size:14px;color:var(--ink);outline:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a857d'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+
+/* NÚT TẠO — dính đáy */
+.gobar{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(transparent,var(--bg) 35%);z-index:20;max-width:680px;margin:0 auto}
+.btn-go{width:100%;border:0;border-radius:16px;background:var(--red);color:#fff;
+  font-size:17px;font-weight:800;padding:16px 0;letter-spacing:.01em;transition:.15s;
+  box-shadow:0 8px 22px rgba(238,58,35,.32)}
+.btn-go:active{background:var(--red-dark)}
+.btn-go:disabled{background:#c9c4bc;box-shadow:none}
+
+/* TIẾN TRÌNH */
+.job{background:var(--canvas);color:#e9e6e0;border-radius:16px;padding:15px 16px;margin-bottom:12px;display:none}
+.job.show{display:block}
+.job .jrow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.job .jp{font-size:13px;color:#cfcac1;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.job .jstate{font-size:12px;color:#ffb257;white-space:nowrap}
+.bar{height:5px;border-radius:99px;background:#2e2e35;overflow:hidden}
+.bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--red),#ff8a4d);border-radius:99px;transition:width .6s}
+
+/* THƯ VIỆN */
+.gal-head{display:flex;align-items:baseline;justify-content:space-between;margin:18px 2px 10px}
+.gal-head h2{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.gal-head small{font-size:11.5px;color:#b3aea5}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+@media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+.gcard{background:var(--canvas-2);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.gcard img{width:100%;display:block;background:#0d0d10;min-height:90px;object-fit:cover}
+.gcard .meta{padding:9px 11px 5px;font-size:11px;color:#a29d94;line-height:1.4}
+.gcard .meta .p{color:#e2ddd4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11.5px}
+.gcard .acts{display:flex;gap:6px;padding:8px 10px 11px}
+.gcard .acts button{flex:1;border:1px solid #3a3a42;background:transparent;color:#d8d3ca;border-radius:9px;padding:8px 0;font-size:12px}
+.gcard .acts button:active{border-color:var(--red);color:#ff6a4f}
+.empty{text-align:center;padding:46px 20px;color:#a29d94}
+.empty .big{font-size:40px;margin-bottom:10px}
+.empty p{font-size:13px;line-height:1.6;max-width:300px;margin:0 auto}
+
+/* LIGHTBOX + XEM ẢNH */
+.lb{position:fixed;inset:0;background:rgba(10,10,12,.94);display:none;flex-direction:column;z-index:50}
+.lb.show{display:flex}
+.lb .lbimg{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;overflow:hidden}
+.lb img{max-width:100%;max-height:100%;border-radius:10px}
+.lb .lbbar{display:flex;gap:10px;padding:12px 16px calc(14px + env(safe-area-inset-bottom))}
+.lb .lbbar button{flex:1;border:1px solid #3a3a42;background:#212127;color:#fff;border-radius:12px;padding:13px 0;font-size:14px;font-weight:600}
+.lb .lbbar .dl{background:var(--red);border-color:var(--red)}
+
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(16px);background:#26262c;color:#fff;
+  padding:11px 17px;border-radius:11px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:88vw;text-align:center;line-height:1.4}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- ===== MÀN HÌNH KHÓA ===== -->
+<div id="lock">
+  <div class="box">
+    <img src="https://cdn.imgpile.com/f/kDdE9bx_xl.png" alt="IDECO" onerror="this.style.display='none'">
+    <h1>Studio Tạo Ảnh <span>AI</span></h1>
+    <p>Ứng dụng nội bộ IDECO — nhập mật khẩu để tiếp tục</p>
+    <input type="password" id="pw" placeholder="••••••••" autocomplete="off" inputmode="text">
+    <button id="btnUnlock">MỞ KHÓA</button>
+    <div id="lockErr"></div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app">
+  <header>
+    <img src="https://cdn.imgpile.com/f/kDdE9bx_xl.png" alt="" onerror="this.style.display='none'">
+    <div class="t"><b>Studio Tạo Ảnh <span>AI</span></b><small>GPT-Image-2 · Kie.ai</small></div>
+    <button class="credit" id="btnCredit"><span class="dot" id="cdot"></span><b id="creditVal">—</b>&nbsp;credits</button>
+  </header>
+
+  <div class="sec">
+    <label class="lbl">Mô tả ảnh cần tạo</label>
+    <textarea id="prompt" placeholder="VD: Poster quảng cáo dược mỹ phẩm tông đỏ trắng sang trọng, chữ 'IDECO PHARMA' nổi bật..."></textarea>
+    <div class="chips">
+      <span class="chip" data-p="Poster quảng cáo sản phẩm dược mỹ phẩm cao cấp, phông nền đỏ trắng thanh lịch, ánh sáng studio chuyên nghiệp, bố cục hiện đại">Poster sản phẩm</span>
+      <span class="chip" data-p="Banner khuyến mãi ngành dược phẩm, thiết kế phẳng hiện đại, tông đỏ và trắng, có khoảng trống để chèn chữ">Banner khuyến mãi</span>
+      <span class="chip" data-p="Ảnh chụp sản phẩm mỹ phẩm trên nền đá cẩm thạch trắng, ánh sáng mềm tự nhiên, phong cách thương mại điện tử cao cấp">Ảnh sản phẩm</span>
+      <span class="chip" data-p="Hình minh họa infographic y dược, phong cách vector sạch sẽ, màu đỏ trắng xám, dễ đọc, chuyên nghiệp">Infographic</span>
+      <span class="chip" data-p="Ảnh nền bài đăng mạng xã hội chúc mừng, tông ấm áp lễ hội, phong cách Việt Nam hiện đại">Post MXH</span>
+    </div>
+  </div>
+
+  <div class="sec">
+    <label class="lbl">Ảnh tham chiếu (tùy chọn · tối đa 3)</label>
+    <div class="refs" id="refs">
+      <div class="slot" data-i="0"><button class="x">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></div>
+      <div class="slot" data-i="1"><button class="x">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></div>
+      <div class="slot" data-i="2"><button class="x">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></div>
+    </div>
+    <div class="ref-hint">Đính kèm ảnh sản phẩm / logo / ảnh mẫu — AI sẽ tạo ảnh mới dựa trên ảnh này. Không đính kèm thì AI vẽ hoàn toàn từ mô tả.</div>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <div class="sec optrow">
+    <div>
+      <label class="lbl">Khung ảnh</label>
+      <select id="aspect">
+        <option value="auto">Tự động</option>
+        <option value="1:1">1:1 vuông</option>
+        <option value="4:3">4:3 ngang</option>
+        <option value="3:4">3:4 dọc</option>
+        <option value="16:9">16:9 banner</option>
+        <option value="9:16">9:16 story</option>
+        <option value="3:2">3:2</option>
+        <option value="2:3">2:3</option>
+      </select>
+    </div>
+    <div>
+      <label class="lbl">Chất lượng</label>
+      <select id="resolution">
+        <option value="1K">1K nhanh</option>
+        <option value="2K">2K nét</option>
+        <option value="4K">4K in ấn</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="job" id="job">
+    <div class="jrow">
+      <span class="jp" id="jobPrompt"></span>
+      <span class="jstate mono" id="jobState"></span>
+    </div>
+    <div class="bar"><i id="jobBar"></i></div>
+  </div>
+
+  <div class="gal-head">
+    <h2>Ảnh đã tạo</h2>
+    <small id="cnt"></small>
+  </div>
+  <div class="grid" id="gallery"></div>
+  <div class="empty" id="empty">
+    <div class="big">📸</div>
+    <p>Chưa có ảnh nào. Nhập mô tả và bấm <b>TẠO ẢNH</b> — ảnh sẽ lưu tại đây trên máy bạn.</p>
+  </div>
+
+  <div class="gobar"><button class="btn-go" id="btnGo">TẠO ẢNH ✨</button></div>
+</div>
+
+<div class="lb" id="lb">
+  <div class="lbimg"><img id="lbImg" src="" alt=""></div>
+  <div class="lbbar">
+    <button id="lbClose">Đóng</button>
+    <button class="dl" id="lbDl">⬇ Tải ảnh về máy</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ================= CẤU HÌNH ================= */
+var API_BASE   = 'https://api.kie.ai';
+var UPLOAD_URL = 'https://kieai.redpandaai.co/api/file-base64-upload';
+var API_KEY    = '3fb45067e29a8aabb5e6f182b9d7b8e4'; // key nội bộ — không chia sẻ file ra ngoài
+var PASSWORD   = 'minhtriet1973';
+var LS_HIST    = 'taoanh_gptimage2_history';
+
+var $ = function(id){ return document.getElementById(id); };
+var busy = false;
+var pollTimer = null;
+var refImages = [null, null, null]; // {dataUrl, uploadedUrl}
+var pickSlot = 0;
+var lbUrl = '';
+
+/* ================= MẬT KHẨU ================= */
+function unlock(){
+  var v = $('pw').value;
+  if(v === PASSWORD){
+    sessionStorage.setItem('taoanh_unlocked', '1');
+    $('lock').style.display = 'none';
+    $('app').classList.add('on');
+    refreshCredits();
+  } else {
+    $('lockErr').textContent = 'Sai mật khẩu, thử lại nhé';
+    $('pw').classList.remove('shake');
+    void $('pw').offsetWidth;
+    $('pw').classList.add('shake');
+    $('pw').select();
+  }
+}
+$('btnUnlock').onclick = unlock;
+$('pw').addEventListener('keydown', function(e){ if(e.key === 'Enter') unlock(); });
+if(sessionStorage.getItem('taoanh_unlocked') === '1'){
+  $('lock').style.display = 'none';
+  $('app').classList.add('on');
+}
+
+/* ================= TIỆN ÍCH ================= */
+function toast(msg, isErr){
+  var t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(function(){ t.className = 'toast'; }, 3800);
+}
+function headers(){ return { 'Authorization': 'Bearer ' + API_KEY, 'Content-Type': 'application/json' }; }
+
+/* ================= CREDITS ================= */
+$('btnCredit').onclick = refreshCredits;
+function refreshCredits(){
+  fetch(API_BASE + '/api/v1/chat/credit', { headers: headers() })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.code === 200){
+        $('creditVal').textContent = Number(d.data).toLocaleString('vi-VN');
+        $('cdot').className = 'dot';
+      } else {
+        $('creditVal').textContent = 'lỗi';
+        $('cdot').className = 'dot bad';
+      }
+    })
+    .catch(function(){
+      $('creditVal').textContent = '—';
+      $('cdot').className = 'dot bad';
+    });
+}
+
+/* ================= CHIP GỢI Ý ================= */
+Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(c){
+  c.onclick = function(){
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(x){ x.classList.remove('on'); });
+    c.classList.add('on');
+    $('prompt').value = c.getAttribute('data-p');
+  };
+});
+
+/* ================= ẢNH THAM CHIẾU ================= */
+Array.prototype.forEach.call(document.querySelectorAll('.slot'), function(slot){
+  slot.addEventListener('click', function(e){
+    var i = Number(slot.getAttribute('data-i'));
+    if(e.target.classList.contains('x')){
+      e.stopPropagation();
+      refImages[i] = null;
+      renderSlots();
+      return;
+    }
+    pickSlot = i;
+    $('fileInput').value = '';
+    $('fileInput').click();
+  });
+});
+
+$('fileInput').addEventListener('change', function(){
+  var file = this.files && this.files[0];
+  if(!file) return;
+  compressImage(file, 1600, 0.86, function(dataUrl){
+    if(!dataUrl){ toast('Không đọc được ảnh này', true); return; }
+    refImages[pickSlot] = { dataUrl: dataUrl, uploadedUrl: null };
+    renderSlots();
+  });
+});
+
+function compressImage(file, maxSide, quality, cb){
+  var reader = new FileReader();
+  reader.onload = function(){
+    var img = new Image();
+    img.onload = function(){
+      var w = img.width, h = img.height;
+      if(Math.max(w, h) > maxSide){
+        var k = maxSide / Math.max(w, h);
+        w = Math.round(w * k); h = Math.round(h * k);
+      }
+      var cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(cv.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = function(){ cb(null); };
+    img.src = reader.result;
+  };
+  reader.onerror = function(){ cb(null); };
+  reader.readAsDataURL(file);
+}
+
+function renderSlots(){
+  Array.prototype.forEach.call(document.querySelectorAll('.slot'), function(slot){
+    var i = Number(slot.getAttribute('data-i'));
+    var old = slot.querySelector('img');
+    if(old) old.remove();
+    if(refImages[i]){
+      slot.classList.add('filled');
+      var im = document.createElement('img');
+      im.src = refImages[i].dataUrl;
+      slot.appendChild(im);
+    } else {
+      slot.classList.remove('filled');
+    }
+  });
+}
+
+function uploadRefs(){
+  var toUpload = refImages.filter(function(r){ return r; });
+  var done = [];
+  var chain = Promise.resolve();
+  toUpload.forEach(function(r, idx){
+    chain = chain.then(function(){
+      if(r.uploadedUrl){ done.push(r.uploadedUrl); return; }
+      updateJob('đang tải ảnh mẫu ' + (idx + 1) + '/' + toUpload.length + ' lên...', 6 + idx * 4);
+      return fetch(UPLOAD_URL, {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({
+          base64Data: r.dataUrl,
+          uploadPath: 'ideco/refs',
+          fileName: 'ref_' + Date.now() + '_' + idx + '.jpg'
+        })
+      }).then(function(res){ return res.json(); })
+        .then(function(d){
+          var u = d && d.data && (d.data.downloadUrl || d.data.fileUrl || d.data.url);
+          if(!u) throw new Error('Tải ảnh mẫu lên thất bại: ' + (d.msg || 'không rõ lỗi'));
+          r.uploadedUrl = u;
+          done.push(u);
+        });
+    });
+  });
+  return chain.then(function(){ return done; });
+}
+
+/* ================= TẠO ẢNH ================= */
+$('btnGo').onclick = generate;
+
+function generate(){
+  if(busy) return;
+  var prompt = $('prompt').value.trim();
+  if(!prompt){ toast('Vui lòng nhập mô tả ảnh trước nhé', true); $('prompt').focus(); return; }
+
+  busy = true;
+  $('btnGo').disabled = true;
+  $('btnGo').textContent = 'ĐANG TẠO...';
+  showJob(prompt, 'chuẩn bị...', 4);
+
+  var hasRefs = refImages.some(function(r){ return r; });
+
+  (hasRefs ? uploadRefs() : Promise.resolve([]))
+    .then(function(urls){
+      var input = {
+        prompt: prompt,
+        aspect_ratio: $('aspect').value,
+        resolution: $('resolution').value
+      };
+      var model = 'gpt-image-2-text-to-image';
+      if(urls.length){
+        model = 'gpt-image-2-image-to-image';
+        input.input_urls = urls;
+      }
+      updateJob('đang gửi yêu cầu tạo ảnh...', 16);
+      return fetch(API_BASE + '/api/v1/jobs/createTask', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ model: model, input: input })
+      }).then(function(r){ return r.json(); });
+    })
+    .then(function(d){
+      if(d.code === 401) throw new Error('API key không hợp lệ hoặc hết hạn (401)');
+      if(d.code === 402) throw new Error('Tài khoản hết credits — nạp thêm trên kie.ai nhé (402)');
+      if(d.code !== 200 || !d.data || !d.data.taskId)
+        throw new Error(d.msg || ('Lỗi tạo tác vụ (mã ' + d.code + ')'));
+      pollTask(d.data.taskId, $('prompt').value.trim());
+    })
+    .catch(function(e){
+      failJob(e.message === 'Failed to fetch'
+        ? 'Không kết nối được máy chủ — kiểm tra mạng thử lại nhé'
+        : e.message);
+    });
+}
+
+function pollTask(taskId, prompt){
+  var tries = 0;
+  var MAX_TRIES = 100; // ~5 phút
+  updateJob('đã vào hàng đợi...', 20);
+
+  pollTimer = setInterval(function(){
+    tries++;
+    if(tries > MAX_TRIES){
+      clearInterval(pollTimer);
+      failJob('Quá thời gian chờ (5 phút). Thử lại hoặc kiểm tra lịch sử trên kie.ai.');
+      return;
+    }
+    fetch(API_BASE + '/api/v1/jobs/recordInfo?taskId=' + encodeURIComponent(taskId), { headers: headers() })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var data = d.data || {};
+        var state = data.state;
+        if(state === 'success'){
+          clearInterval(pollTimer);
+          var urls = [];
+          try{ urls = (JSON.parse(data.resultJson || '{}').resultUrls) || []; }catch(_){}
+          if(!urls.length){ failJob('Tác vụ xong nhưng không nhận được link ảnh'); return; }
+          finishJob(urls, prompt, data.creditsConsumed);
+        } else if(state === 'fail'){
+          clearInterval(pollTimer);
+          failJob('Tạo ảnh thất bại: ' + (data.failMsg || data.failCode || 'không rõ nguyên nhân'));
+        } else {
+          var pct = Math.min(92, 20 + (Number(data.progress) || tries * 2));
+          var labels = { waiting: 'đang chờ xử lý', queuing: 'đang xếp hàng', generating: 'đang vẽ ảnh 🎨' };
+          updateJob((labels[state] || state || 'đang xử lý') + '...', pct);
+        }
+      })
+      .catch(function(){ /* lỗi mạng tạm — thử lại vòng sau */ });
+  }, 3000);
+}
+
+/* ================= TIẾN TRÌNH ================= */
+function showJob(prompt, state, pct){
+  $('job').classList.add('show');
+  $('jobPrompt').textContent = prompt;
+  updateJob(state, pct);
+  $('job').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function updateJob(state, pct){
+  $('jobState').textContent = state;
+  $('jobBar').style.width = pct + '%';
+}
+function finishJob(urls, prompt, credits){
+  $('jobBar').style.width = '100%';
+  $('jobState').textContent = 'hoàn tất ✓';
+  setTimeout(function(){ $('job').classList.remove('show'); }, 1200);
+  resetBtn();
+  var now = Date.now();
+  var hist = loadHist();
+  urls.forEach(function(u){ hist.unshift({ url: u, prompt: prompt, t: now }); });
+  saveHist(hist);
+  renderGallery();
+  toast('Xong ' + urls.length + ' ảnh' + (credits ? ' · tốn ' + credits + ' credits' : '') + ' — nhớ tải về, link hết hạn sau 24h!');
+  refreshCredits();
+}
+function failJob(msg){
+  clearInterval(pollTimer);
+  $('job').classList.remove('show');
+  resetBtn();
+  toast(msg, true);
+}
+function resetBtn(){
+  busy = false;
+  $('btnGo').disabled = false;
+  $('btnGo').textContent = 'TẠO ẢNH ✨';
+}
+
+/* ================= THƯ VIỆN ================= */
+function loadHist(){
+  try{ return JSON.parse(localStorage.getItem(LS_HIST) || '[]'); }catch(_){ return []; }
+}
+function saveHist(h){
+  localStorage.setItem(LS_HIST, JSON.stringify(h.slice(0, 60)));
+}
+function renderGallery(){
+  var hist = loadHist();
+  var g = $('gallery');
+  g.innerHTML = '';
+  $('empty').style.display = hist.length ? 'none' : 'block';
+  $('cnt').textContent = hist.length ? hist.length + ' ảnh · lưu trên máy này' : '';
+  hist.forEach(function(item, i){
+    var card = document.createElement('div');
+    card.className = 'gcard';
+    var d = new Date(item.t);
+    var time = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    card.innerHTML =
+      '<img loading="lazy" alt="Ảnh AI">' +
+      '<div class="meta"><div class="p"></div><span class="mono">' + time + '</span></div>' +
+      '<div class="acts">' +
+        '<button data-act="dl">⬇ Tải</button>' +
+        '<button data-act="re">↻ Tạo lại</button>' +
+        '<button data-act="del" style="flex:0 0 40px">🗑</button>' +
+      '</div>';
+    var im = card.querySelector('img');
+    im.src = item.url;
+    im.onclick = function(){ lbUrl = item.url; $('lbImg').src = item.url; $('lb').classList.add('show'); };
+    im.onerror = function(){ this.alt = 'Link đã hết hạn (24h)'; };
+    card.querySelector('.p').textContent = item.prompt;
+    card.querySelector('[data-act=dl]').onclick = function(){ downloadImg(item.url); };
+    card.querySelector('[data-act=re]').onclick = function(){
+      $('prompt').value = item.prompt;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast('Đã nạp lại mô tả — bấm TẠO ẢNH');
+    };
+    card.querySelector('[data-act=del]').onclick = function(){
+      var h = loadHist(); h.splice(i, 1); saveHist(h); renderGallery();
+    };
+    g.appendChild(card);
+  });
+}
+
+function downloadImg(url){
+  toast('Đang tải ảnh...');
+  fetch(url)
+    .then(function(r){ if(!r.ok) throw 0; return r.blob(); })
+    .then(function(blob){
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'IDECO_AI_' + Date.now() + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    })
+    .catch(function(){ window.open(url, '_blank'); });
+}
+
+$('lbClose').onclick = function(){ $('lb').classList.remove('show'); };
+$('lbDl').onclick = function(){ if(lbUrl) downloadImg(lbUrl); };
+$('lb').addEventListener('click', function(e){
+  if(e.target === this || e.target.classList.contains('lbimg')) this.classList.remove('show');
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') $('lb').classList.remove('show');
+});
+
+/* ================= KHỞI ĐỘNG ================= */
+renderGallery();
+if(sessionStorage.getItem('taoanh_unlocked') === '1') refreshCredits();
+</script>
+</body>
+</html>
