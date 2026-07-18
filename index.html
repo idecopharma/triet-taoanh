@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>IDECO · Studio Tạo Ảnh AI</title>
+<title>IDECO · Studio Tạo Ảnh & Dựng Video AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -134,6 +134,89 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
   padding:11px 17px;border-radius:11px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:88vw;text-align:center;line-height:1.4}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.err{background:var(--red)}
+
+/* ============ GHÉP VIDEO / LỒNG TIẾNG ============ */
+.vcard .acts button.sel{border-color:#4f8cff;color:#7fb0ff}
+.vcard .acts button.sel.on{background:#4f8cff;color:#fff;font-weight:800}
+.mergebar{position:fixed;left:14px;right:14px;bottom:calc(78px + env(safe-area-inset-bottom));max-width:652px;margin:0 auto;z-index:21;display:none}
+.mergebar.show{display:block}
+.mergebar button{width:100%;border:0;border-radius:14px;background:#4f8cff;color:#fff;font-size:15px;font-weight:800;padding:14px 0;box-shadow:0 8px 22px rgba(79,140,255,.4)}
+.mm{position:fixed;inset:0;background:rgba(10,10,12,.97);display:none;flex-direction:column;z-index:80;overflow-y:auto}
+.mm.show{display:flex}
+.mm .head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;color:#fff;position:sticky;top:0;background:rgba(10,10,12,.97)}
+.mm .head b{font-size:15px}
+.mm .head .close{border:0;background:#26262c;color:#fff;border-radius:10px;padding:9px 14px;font-size:13px}
+.mm .body{padding:0 16px calc(20px + env(safe-area-inset-bottom));max-width:680px;margin:0 auto;width:100%}
+.mm h3{color:#8a857d;font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin:16px 0 8px}
+.mlist{display:flex;flex-direction:column;gap:8px}
+.mitem{display:flex;align-items:center;gap:10px;background:#1c1c21;border-radius:12px;padding:8px 10px}
+.mitem video{width:74px;height:46px;object-fit:cover;border-radius:8px;background:#000}
+.mitem .mi{flex:1;color:#d8d3ca;font-size:12px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.mitem .mv{display:flex;flex-direction:column;gap:4px}
+.mitem .mv button{width:30px;height:26px;border:1px solid #3a3a42;background:transparent;color:#d8d3ca;border-radius:7px;font-size:12px}
+.mitem .num2{background:#4f8cff;color:#fff;font-size:11px;font-weight:800;width:20px;height:20px;border-radius:50%;line-height:20px;text-align:center;flex:0 0 20px}
+.arow{display:flex;align-items:center;gap:10px;background:#1c1c21;border-radius:12px;padding:11px 12px;margin-bottom:8px;color:#d8d3ca;font-size:13px}
+.arow .sw{margin-left:auto}
+.arow input[type=checkbox]{width:20px;height:20px;accent-color:#4f8cff}
+.arow input[type=range]{width:90px;accent-color:#4f8cff}
+.arow .fbtn{border:1px dashed #3a3a42;background:transparent;color:#a29d94;border-radius:9px;padding:8px 10px;font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mm canvas{width:100%;border-radius:12px;background:#000;display:block}
+.mm .mprog{color:#ffb257;font-size:13px;text-align:center;margin:10px 0;min-height:18px}
+.mm .go{width:100%;border:0;border-radius:14px;background:var(--red);color:#fff;font-size:16px;font-weight:800;padding:15px 0;margin-top:6px}
+.mm .go.rec{background:#4f8cff}
+.mm .go:disabled{background:#555}
+.mm .hint2{color:#8a857d;font-size:11.5px;line-height:1.5;margin-top:8px}
+@keyframes blink{50%{opacity:.35}}
+.recdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#ff3b30;margin-right:6px;animation:blink 1s infinite}
+
+/* ============ TABS ============ */
+.tabs{display:flex;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:5px;margin-bottom:14px;position:sticky;top:62px;z-index:9}
+.tabs button{flex:1;border:0;background:transparent;border-radius:10px;padding:11px 0;font-size:14px;font-weight:700;color:var(--muted);transition:.15s}
+.tabs button.on{background:var(--red);color:#fff;box-shadow:0 4px 12px rgba(238,58,35,.28)}
+
+/* ============ VIDEO TAB ============ */
+.refs5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.refs5 .slot{aspect-ratio:3/4;border:1.5px dashed var(--line);border-radius:12px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;font-size:9.5px;color:var(--muted);position:relative;overflow:hidden;background:#faf8f5;cursor:pointer}
+.refs5 .slot .plus{font-size:16px;color:#c9c4bc}
+.refs5 .slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.refs5 .slot .x{position:absolute;top:3px;right:3px;z-index:2;width:18px;height:18px;border-radius:50%;border:0;
+  background:rgba(0,0,0,.62);color:#fff;font-size:10px;line-height:18px;display:none;padding:0}
+.refs5 .slot.filled .x{display:block}
+.refs5 .slot.filled{border-style:solid;border-color:var(--red)}
+.refs5 .slot .num{position:absolute;top:3px;left:3px;z-index:2;background:var(--red);color:#fff;font-size:9px;font-weight:800;
+  width:16px;height:16px;border-radius:50%;line-height:16px;text-align:center;display:none}
+.refs5 .slot.filled .num{display:block}
+
+.vcard{background:var(--canvas-2);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;grid-column:span 2}
+@media(min-width:560px){.vcard{grid-column:span 3}}
+.vcard video{width:100%;display:block;background:#0d0d10;max-height:340px}
+.vcard .meta{padding:9px 11px 5px;font-size:11px;color:#a29d94;line-height:1.4}
+.vcard .meta .p{color:#e2ddd4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11.5px}
+.vcard .acts{display:flex;gap:6px;padding:8px 10px 11px}
+.vcard .acts button{flex:1;border:1px solid #3a3a42;background:transparent;color:#d8d3ca;border-radius:9px;padding:9px 0;font-size:12px}
+.vcard .acts button.ext{border-color:#ffb257;color:#ffb257;font-weight:700}
+.vcard .acts button:active{border-color:var(--red);color:#ff6a4f}
+
+/* ============ FRAME PICKER ============ */
+.fp{position:fixed;inset:0;background:rgba(10,10,12,.96);display:none;flex-direction:column;z-index:70}
+.fp.show{display:flex}
+.fp .head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;color:#fff}
+.fp .head b{font-size:15px}
+.fp .head small{display:block;font-size:11px;color:#8a857d;font-weight:400;margin-top:2px}
+.fp .head .close{border:0;background:#26262c;color:#fff;border-radius:10px;padding:9px 14px;font-size:13px}
+.fp .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:8px 14px;overflow:hidden}
+.fp video{max-width:100%;max-height:100%;border-radius:12px;background:#000}
+.fp .ctrl{padding:10px 18px calc(16px + env(safe-area-inset-bottom))}
+.fp .trow{display:flex;justify-content:space-between;color:#cfcac1;font-size:12px;margin-bottom:8px}
+.fp .trow .cur{color:#ffb257;font-weight:700}
+.fp input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:99px;background:#34343c;outline:none;margin-bottom:6px}
+.fp input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--red);border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.5)}
+.fp .steps{display:flex;gap:8px;margin:4px 0 12px}
+.fp .steps button{flex:1;border:1px solid #3a3a42;background:#212127;color:#d8d3ca;border-radius:10px;padding:11px 0;font-size:15px}
+.fp .cut{width:100%;border:0;border-radius:14px;background:var(--red);color:#fff;font-size:16px;font-weight:800;padding:15px 0}
+.fp .cut:disabled{background:#555}
+
 </style>
 </head>
 <body>
@@ -154,9 +237,16 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
 <div id="app">
   <header>
     <img src="https://cdn.imgpile.com/f/kDdE9bx_xl.png" alt="" onerror="this.style.display='none'">
-    <div class="t"><b>Studio Tạo Ảnh <span>AI</span></b><small>GPT-Image-2 · Kie.ai</small></div>
+    <div class="t"><b>Studio Tạo Ảnh <span>AI</span></b><small>GPT-Image-2 + Grok Imagine · Kie.ai</small></div>
     <button class="credit" id="btnCredit"><span class="dot" id="cdot"></span><b id="creditVal">—</b>&nbsp;credits</button>
   </header>
+
+  <div class="tabs">
+    <button id="tabBtnImg" class="on">🖼 Tạo Ảnh</button>
+    <button id="tabBtnVid">🎬 Dựng Video</button>
+  </div>
+
+  <div id="tabImg">
 
   <div class="sec">
     <label class="lbl">Mô tả ảnh cần tạo</label>
@@ -223,7 +313,87 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
     <p>Chưa có ảnh nào. Nhập mô tả và bấm <b>TẠO ẢNH</b> — ảnh sẽ lưu tại đây trên máy bạn.</p>
   </div>
 
-  <div class="gobar"><button class="btn-go" id="btnGo">TẠO ẢNH ✨</button></div>
+
+  <div class="gobar" id="gobarImg"><button class="btn-go" id="btnGo">TẠO ẢNH ✨</button></div>
+  </div><!-- /tabImg -->
+
+  <!-- ===== TAB DỰNG VIDEO ===== -->
+  <div id="tabVid" style="display:none">
+    <div class="sec">
+      <label class="lbl">Mô tả video cần tạo</label>
+      <textarea id="vPrompt" placeholder="VD: Nhân vật trong ảnh mỉm cười, quay nhẹ đầu, ánh sáng studio, camera zoom chậm vào sản phẩm..."></textarea>
+      <div class="chips" id="vChips">
+        <span class="chip" data-p="Giữ nguyên nhận diện khuôn mặt ảnh gốc, không đổi khẩu hình miệng">Giữ nguyên khuôn mặt</span>
+        <span class="chip" data-p="Giữ nguyên nhận diện khuôn mặt ảnh gốc, không đổi khẩu hình miệng, nhân vật mỉm cười tự nhiên, camera tĩnh">Mỉm cười tự nhiên</span>
+        <span class="chip" data-p="Camera zoom chậm vào sản phẩm, ánh sáng studio lung linh, sản phẩm xoay nhẹ 360 độ, phông nền sang trọng">Xoay sản phẩm 360°</span>
+        <span class="chip" data-p="Cảnh quay quảng cáo dược mỹ phẩm chuyên nghiệp, chuyển động camera mượt mà, ánh sáng điện ảnh, tông đỏ trắng thương hiệu">Quảng cáo chuyên nghiệp</span>
+        <span class="chip" data-p="Nhân vật nói chuyện tự nhiên trước camera, giữ nguyên nhận diện khuôn mặt ảnh gốc, cử chỉ tay nhẹ nhàng, phong cách người dẫn chương trình">Người dẫn nói chuyện</span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <label class="lbl">Ảnh tham chiếu (tối đa 5 — thứ tự @image1 → @image5)</label>
+      <div class="refs5" id="vRefs">
+        <div class="slot" data-i="0"><span class="num">1</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 1</span></div>
+        <div class="slot" data-i="1"><span class="num">2</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 2</span></div>
+        <div class="slot" data-i="2"><span class="num">3</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 3</span></div>
+        <div class="slot" data-i="3"><span class="num">4</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 4</span></div>
+        <div class="slot" data-i="4"><span class="num">5</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 5</span></div>
+      </div>
+      <div class="ref-hint">Bấm nút 🎬 trên ảnh ở tab Tạo Ảnh để tự động nạp qua đây theo thứ tự bấm. Ảnh 1 là khung hình gốc chính của video.</div>
+      <input type="file" id="vFileInput" accept="image/*">
+    </div>
+
+    <div class="sec optrow" style="grid-template-columns:1fr 1fr 1fr;display:grid;gap:10px">
+      <div>
+        <label class="lbl">Thời lượng</label>
+        <select id="vDur">
+          <option value="6">6 giây</option>
+          <option value="12">12 giây</option>
+          <option value="15">15 giây</option>
+          <option value="30">30 giây (2×15s)</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">Khung hình</label>
+        <select id="vAspect">
+          <option value="16:9">16:9 ngang</option>
+          <option value="9:16">9:16 dọc</option>
+          <option value="1:1">1:1 vuông</option>
+          <option value="2:3">2:3</option>
+          <option value="3:2">3:2</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">Chất lượng</label>
+        <select id="vRes">
+          <option value="480p">480p nhanh</option>
+          <option value="720p">720p nét</option>
+        </select>
+      </div>
+    </div>
+    <div class="ref-hint" style="margin:-6px 2px 12px">Grok hỗ trợ tối đa 15s/lần. Chọn 30s: app tự dựng đoạn 1 (15s) → tự cắt frame cuối → dựng nối đoạn 2 (15s).</div>
+
+    <div class="job" id="vJob">
+      <div class="jrow">
+        <span class="jp" id="vJobPrompt"></span>
+        <span class="jstate mono" id="vJobState"></span>
+      </div>
+      <div class="bar"><i id="vJobBar"></i></div>
+    </div>
+
+    <div class="gal-head">
+      <h2>Video đã tạo</h2>
+      <small id="vCnt"></small>
+    </div>
+    <div class="grid" id="vGallery"></div>
+    <div class="empty" id="vEmpty">
+      <div class="big">🎬</div>
+      <p>Chưa có video. Chọn ảnh tham chiếu, nhập mô tả và bấm <b>DỰNG VIDEO</b>. Sau khi xong có thể bấm <b>Extension</b> để cắt frame tạo tiếp.</p>
+    </div>
+
+    <div class="gobar" id="gobarVid" style="display:none"><button class="btn-go" id="btnGoVid">DỰNG VIDEO 🎬</button></div>
+  </div><!-- /tabVid -->
 </div>
 
 <div class="lb" id="lb">
@@ -233,6 +403,79 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
     <button class="dl" id="lbDl">⬇ Tải ảnh về máy</button>
   </div>
 </div>
+
+
+<!-- ===== GHÉP VIDEO & LỒNG TIẾNG ===== -->
+<div class="mergebar" id="mergeBar"><button id="btnMerge">🎞 GHÉP VIDEO (<span id="mCount">0</span>)</button></div>
+
+<div class="mm" id="mm">
+  <div class="head">
+    <div><b>🎞 Ghép video & lồng tiếng</b></div>
+    <button class="close" id="mmClose">Đóng</button>
+  </div>
+  <div class="body">
+    <h3>Thứ tự các đoạn</h3>
+    <div class="mlist" id="mList"></div>
+
+    <h3>Âm thanh (trộn được nhiều nguồn)</h3>
+    <div class="arow">🔊 Tiếng gốc video
+      <input type="range" id="aOrigVol" min="0" max="100" value="100">
+      <span class="sw"><input type="checkbox" id="aOrig" checked></span>
+    </div>
+    <div class="arow">🎵 Nhạc nền / audio
+      <button class="fbtn" id="aMusicBtn">＋ Chọn file âm thanh</button>
+      <input type="file" id="aMusicFile" accept="audio/*" style="display:none">
+      <input type="range" id="aMusicVol" min="0" max="100" value="60">
+      <span class="sw"><input type="checkbox" id="aMusic"></span>
+    </div>
+    <div class="arow">🎙 Lồng tiếng qua micro
+      <input type="range" id="aMicVol" min="0" max="100" value="100">
+      <span class="sw"><input type="checkbox" id="aMic"></span>
+    </div>
+
+    <h3>Xem trước khi ghép</h3>
+    <canvas id="mCanvas" width="1280" height="720"></canvas>
+    <div class="mprog" id="mProg">Sẵn sàng — bấm bắt đầu để ghép theo thời gian thực</div>
+    <button class="go" id="mGo">▶ BẮT ĐẦU GHÉP & XUẤT FILE</button>
+
+    <div id="mResult" style="display:none">
+      <h3>✅ Video ghép hoàn tất — xem lại trước khi tải</h3>
+      <video id="mResVideo" controls playsinline style="width:100%;border-radius:12px;background:#000"></video>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="mResDl" style="flex:1;border:0;border-radius:12px;background:var(--ok);color:#fff;font-size:15px;font-weight:800;padding:14px 0">⬇ TẢI FILE <span id="mResInfo"></span></button>
+        <button id="mResAgain" style="flex:0 0 110px;border:1px solid #3a3a42;background:transparent;color:#d8d3ca;border-radius:12px;font-size:13px;font-weight:700">🔁 Ghép lại</button>
+      </div>
+      <div class="hint2" id="mResHint"></div>
+    </div>
+    <div class="hint2">Ghép chạy theo thời gian thực (video 30s → ghép mất 30s). Bật 🎙 micro thì đọc lời bình ngay khi video chạy — âm thanh được trộn trực tiếp. Xuất xong file tự tải về máy. Giữ màn hình sáng, không chuyển tab trong lúc ghép.</div>
+  </div>
+</div>
+
+<!-- ===== FRAME PICKER (EXTENSION) ===== -->
+<div class="fp" id="fp">
+  <div class="head">
+    <div><b>✂ Chọn điểm nối video</b><small>Kéo thanh trượt / bấm ± chọn từng frame → bấm CẮT để lấy frame làm Ảnh 1</small></div>
+    <button class="close" id="fpClose">Đóng</button>
+  </div>
+  <div class="stage"><video id="fpVideo" playsinline muted preload="auto"></video></div>
+  <div class="ctrl">
+    <div class="trow"><span>0:00</span><span class="cur" id="fpCur">0.00s</span><span id="fpDur">—</span></div>
+    <input type="range" id="fpRange" min="0" max="100" step="1" value="0">
+    <div class="steps">
+      <button id="fpM5">−5f</button><button id="fpM1">−1f</button><button id="fpP1">+1f</button><button id="fpP5">+5f</button>
+    </div>
+    <button class="cut" id="fpCut">✂ CẮT FRAME NÀY → LÀM ẢNH 1 DỰNG TIẾP</button>
+    <div class="trow" style="align-items:center;margin-top:12px"><span style="white-space:nowrap">Hoặc nối server:</span>
+      <select id="fpExtDur" style="flex:1;margin:0 10px;background:#212127;border:1px solid #3a3a42;color:#fff;border-radius:10px;padding:10px 12px;font:inherit;font-size:14px">
+        <option value="6">+6 giây</option>
+        <option value="12">+12 giây</option>
+        <option value="15" selected>+15 giây</option>
+      </select>
+      <button id="fpExtBtn" style="border:1px solid #ffb257;background:transparent;color:#ffb257;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;white-space:nowrap">⚡ NỐI</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -549,6 +792,7 @@ function renderGallery(){
       '<div class="acts">' +
         '<button data-act="dl">⬇ Tải</button>' +
         '<button data-act="re">↻ Tạo lại</button>' +
+        '<button data-act="vid" style="flex:0 0 44px">🎬</button>' +
         '<button data-act="del" style="flex:0 0 40px">🗑</button>' +
       '</div>';
     var im = card.querySelector('img');
@@ -557,6 +801,7 @@ function renderGallery(){
     im.onerror = function(){ this.alt = 'Link đã hết hạn (24h)'; };
     card.querySelector('.p').textContent = item.prompt;
     card.querySelector('[data-act=dl]').onclick = function(){ downloadImg(item.url); };
+    card.querySelector('[data-act=vid]').onclick = function(){ sendToVideo(item.url); };
     card.querySelector('[data-act=re]').onclick = function(){
       $('prompt').value = item.prompt;
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -593,6 +838,744 @@ $('lb').addEventListener('click', function(e){
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape') $('lb').classList.remove('show');
 });
+
+
+/* ================================================================
+   TAB DỰNG VIDEO — GROK IMAGINE (Kie.ai)
+   ================================================================ */
+var LS_VHIST = 'taoanh_grokvideo_history';
+var vBusy = false, vPollTimer = null;
+var vRefs = [null, null, null, null, null]; // {dataUrl, uploadedUrl}
+var vChain = null; // {stage:1|2, prompt} — chuỗi tự động cho video 30s (2 đoạn 15s)
+var vPickSlot = 0;
+var FPS = 30; // bước frame khi tua
+
+/* ---- CHUYỂN TAB ---- */
+function switchTab(vid){
+  $('tabImg').style.display = vid ? 'none' : 'block';
+  $('tabVid').style.display = vid ? 'block' : 'none';
+  $('gobarImg').style.display = vid ? 'none' : 'block';
+  $('gobarVid').style.display = vid ? 'block' : 'none';
+  $('tabBtnImg').classList.toggle('on', !vid);
+  $('tabBtnVid').classList.toggle('on', vid);
+  $('mergeBar').classList.toggle('show', vid && mergeSel.length > 0);
+  window.scrollTo({ top: 0 });
+}
+$('tabBtnImg').onclick = function(){ switchTab(false); };
+$('tabBtnVid').onclick = function(){ switchTab(true); };
+
+/* ---- CHIP MẪU VIDEO (cộng dồn vào prompt) ---- */
+Array.prototype.forEach.call(document.querySelectorAll('#vChips .chip'), function(c){
+  c.onclick = function(){
+    c.classList.toggle('on');
+    var p = c.getAttribute('data-p');
+    var cur = $('vPrompt').value.trim();
+    if(c.classList.contains('on')){
+      $('vPrompt').value = cur ? (cur.replace(/[.,\s]+$/,'') + ', ' + p) : p;
+    } else {
+      $('vPrompt').value = cur.replace(p, '').replace(/,\s*,/g, ',').replace(/^[\s,]+|[\s,]+$/g, '');
+    }
+  };
+});
+
+/* ---- NẠP ẢNH TỪ TAB TẠO ẢNH ---- */
+function sendToVideo(url){
+  var i = -1;
+  for(var k = 0; k < 5; k++){
+    if(vRefs[k] && vRefs[k].uploadedUrl === url){ toast('Ảnh này đã có trong video (vị trí ' + (k+1) + ')'); return; }
+  }
+  for(k = 0; k < 5; k++){ if(!vRefs[k]){ i = k; break; } }
+  if(i < 0){ toast('Đã đủ 5 ảnh tham chiếu — xóa bớt để thêm', true); return; }
+  vRefs[i] = { dataUrl: url, uploadedUrl: url }; // link Kie đã online, không cần upload lại
+  renderVSlots();
+  switchTab(true);
+  toast('Đã nạp ảnh vào vị trí ' + (i + 1) + ' — tab Dựng Video');
+}
+
+/* ---- SLOT ẢNH THAM CHIẾU VIDEO ---- */
+Array.prototype.forEach.call(document.querySelectorAll('#vRefs .slot'), function(slot){
+  slot.addEventListener('click', function(e){
+    var i = Number(slot.getAttribute('data-i'));
+    if(e.target.classList.contains('x')){
+      e.stopPropagation();
+      vRefs[i] = null;
+      renderVSlots();
+      return;
+    }
+    vPickSlot = i;
+    $('vFileInput').value = '';
+    $('vFileInput').click();
+  });
+});
+$('vFileInput').addEventListener('change', function(){
+  var file = this.files && this.files[0];
+  if(!file) return;
+  compressImage(file, 1600, 0.86, function(dataUrl){
+    if(!dataUrl){ toast('Không đọc được ảnh này', true); return; }
+    vRefs[vPickSlot] = { dataUrl: dataUrl, uploadedUrl: null };
+    renderVSlots();
+  });
+});
+function renderVSlots(){
+  Array.prototype.forEach.call(document.querySelectorAll('#vRefs .slot'), function(slot){
+    var i = Number(slot.getAttribute('data-i'));
+    var old = slot.querySelector('img');
+    if(old) old.remove();
+    if(vRefs[i]){
+      slot.classList.add('filled');
+      var im = document.createElement('img');
+      im.src = vRefs[i].dataUrl;
+      slot.appendChild(im);
+    } else {
+      slot.classList.remove('filled');
+    }
+  });
+}
+function uploadVRefs(){
+  var list = vRefs.filter(function(r){ return r; });
+  var done = [];
+  var chain = Promise.resolve();
+  list.forEach(function(r, idx){
+    chain = chain.then(function(){
+      if(r.uploadedUrl){ done.push(r.uploadedUrl); return; }
+      updateVJob('đang tải ảnh ' + (idx + 1) + '/' + list.length + ' lên...', 6 + idx * 3);
+      return fetch(UPLOAD_URL, {
+        method: 'POST', headers: headers(),
+        body: JSON.stringify({ base64Data: r.dataUrl, uploadPath: 'ideco/vrefs', fileName: 'vref_' + Date.now() + '_' + idx + '.jpg' })
+      }).then(function(res){ return res.json(); })
+        .then(function(d){
+          var u = d && d.data && (d.data.downloadUrl || d.data.fileUrl || d.data.url);
+          if(!u) throw new Error('Tải ảnh tham chiếu thất bại: ' + (d.msg || 'không rõ lỗi'));
+          r.uploadedUrl = u;
+          done.push(u);
+        });
+    });
+  });
+  return chain.then(function(){ return done; });
+}
+
+/* ---- DỰNG VIDEO ---- */
+$('btnGoVid').onclick = generateVideo;
+function generateVideo(){
+  if(vBusy) return;
+  var prompt = $('vPrompt').value.trim();
+  if(!prompt){ toast('Vui lòng nhập mô tả video trước nhé', true); $('vPrompt').focus(); return; }
+  var hasRefs = vRefs.some(function(r){ return r; });
+
+  vBusy = true;
+  $('btnGoVid').disabled = true;
+  $('btnGoVid').textContent = 'ĐANG DỰNG VIDEO...';
+  showVJob(prompt, 'chuẩn bị...', 4);
+
+  (hasRefs ? uploadVRefs() : Promise.resolve([]))
+    .then(function(urls){
+      var durSel = $('vDur').value;
+      var dur = durSel;
+      if(durSel === '30'){
+        dur = '15';
+        if(!vChain) vChain = { stage: 1, prompt: prompt };
+      } else {
+        vChain = null;
+      }
+      var model, input = {
+        prompt: prompt,
+        mode: 'normal',
+        duration: dur,
+        resolution: $('vRes').value,
+        aspect_ratio: $('vAspect').value
+      };
+      if(urls.length){
+        model = 'grok-imagine/image-to-video';
+        input.image_urls = urls;
+      } else {
+        model = 'grok-imagine/text-to-video';
+      }
+      updateVJob('đang gửi yêu cầu dựng video...', 16);
+      return fetch(API_BASE + '/api/v1/jobs/createTask', {
+        method: 'POST', headers: headers(),
+        body: JSON.stringify({ model: model, input: input })
+      }).then(function(r){ return r.json(); });
+    })
+    .then(function(d){
+      if(d.code === 401) throw new Error('API key không hợp lệ hoặc hết hạn (401)');
+      if(d.code === 402) throw new Error('Tài khoản hết credits — nạp thêm trên kie.ai nhé (402)');
+      if(d.code !== 200 || !d.data || !d.data.taskId)
+        throw new Error(d.msg || ('Lỗi tạo tác vụ video (mã ' + d.code + ')'));
+      var pTag = vChain ? ' (phần ' + vChain.stage + '/2 · 15s)' : '';
+      pollVideoTask(d.data.taskId, $('vPrompt').value.trim() + pTag);
+    })
+    .catch(function(e){
+      failVJob(e.message === 'Failed to fetch'
+        ? 'Không kết nối được máy chủ — kiểm tra mạng thử lại nhé' : e.message);
+    });
+}
+function pollVideoTask(taskId, prompt){
+  var tries = 0, MAX_TRIES = 240; // ~12 phút — video lâu hơn ảnh
+  updateVJob('đã vào hàng đợi...', 20);
+  vPollTimer = setInterval(function(){
+    tries++;
+    if(tries > MAX_TRIES){
+      clearInterval(vPollTimer);
+      failVJob('Quá thời gian chờ (12 phút). Kiểm tra lịch sử trên kie.ai.');
+      return;
+    }
+    fetch(API_BASE + '/api/v1/jobs/recordInfo?taskId=' + encodeURIComponent(taskId), { headers: headers() })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var data = d.data || {};
+        var state = data.state;
+        if(state === 'success'){
+          clearInterval(vPollTimer);
+          var urls = [];
+          try{ urls = (JSON.parse(data.resultJson || '{}').resultUrls) || []; }catch(_){}
+          if(!urls.length){ failVJob('Tác vụ xong nhưng không nhận được link video'); return; }
+          finishVJob(urls, prompt, data.creditsConsumed, taskId);
+        } else if(state === 'fail'){
+          clearInterval(vPollTimer);
+          failVJob('Dựng video thất bại: ' + (data.failMsg || data.failCode || 'không rõ nguyên nhân'));
+        } else {
+          var pct = Math.min(92, 20 + (Number(data.progress) || tries * 0.7));
+          var labels = { waiting: 'đang chờ xử lý', queuing: 'đang xếp hàng', generating: 'đang dựng video 🎬' };
+          updateVJob((labels[state] || state || 'đang xử lý') + '...', pct);
+        }
+      })
+      .catch(function(){ /* lỗi mạng tạm */ });
+  }, 3000);
+}
+function showVJob(prompt, state, pct){
+  $('vJob').classList.add('show');
+  $('vJobPrompt').textContent = prompt;
+  updateVJob(state, pct);
+  $('vJob').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function updateVJob(state, pct){
+  $('vJobState').textContent = state;
+  $('vJobBar').style.width = pct + '%';
+}
+function finishVJob(urls, prompt, credits, taskId){
+  $('vJobBar').style.width = '100%';
+  $('vJobState').textContent = 'hoàn tất ✓';
+  setTimeout(function(){ $('vJob').classList.remove('show'); }, 1200);
+  resetVBtn();
+  var now = Date.now();
+  var h = loadVHist();
+  urls.forEach(function(u){ h.unshift({ url: u, prompt: prompt, t: now, taskId: taskId }); });
+  saveVHist(h);
+  renderVGallery();
+  refreshCredits();
+
+  /* Chuỗi 30s: xong đoạn 1 (15s) → tự động NỐI DÀI thêm 15s bằng API extend (server-side, không CORS) */
+  if(vChain && vChain.stage === 1 && taskId){
+    vChain.stage = 2;
+    toast('✓ Xong đoạn 1/2 (15s) — đang tự động nối dài thêm 15s trên máy chủ...');
+    setTimeout(function(){
+      runExtend(taskId, vChain.prompt, 15, '15', vChain.prompt + ' (video 30s hoàn chỉnh)');
+    }, 600);
+    return;
+  }
+  var was30 = vChain && vChain.stage === 2;
+  vChain = null;
+  toast(was30
+    ? '🎉 Hoàn tất video 30s nối liền — nhớ tải về, link hết hạn sau 24h!'
+    : 'Xong video' + (credits ? ' · tốn ' + credits + ' credits' : '') + ' — nhớ tải về, link hết hạn sau 24h!');
+}
+
+/* Gọi API grok-imagine/extend — nối video trên server Kie, không cần tải video về máy */
+function runExtend(taskId, prompt, extendAt, extendTimes, histLabel){
+  vBusy = true;
+  $('btnGoVid').disabled = true;
+  $('btnGoVid').textContent = 'ĐANG NỐI VIDEO...';
+  showVJob(histLabel, 'đang gửi yêu cầu nối video...', 10);
+  fetch(API_BASE + '/api/v1/jobs/createTask', {
+    method: 'POST', headers: headers(),
+    body: JSON.stringify({
+      model: 'grok-imagine/extend',
+      input: {
+        task_id: taskId,
+        prompt: prompt || '',
+        extend_at: Math.max(2, Math.round(extendAt)),
+        extend_times: String(extendTimes)
+      }
+    })
+  }).then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.code === 401) throw new Error('API key không hợp lệ hoặc hết hạn (401)');
+      if(d.code === 402) throw new Error('Tài khoản hết credits — nạp thêm trên kie.ai nhé (402)');
+      if(d.code !== 200 || !d.data || !d.data.taskId)
+        throw new Error(d.msg || ('Lỗi nối video (mã ' + d.code + ')'));
+      pollVideoTask(d.data.taskId, histLabel);
+    })
+    .catch(function(e){
+      failVJob(e.message === 'Failed to fetch'
+        ? 'Không kết nối được máy chủ — kiểm tra mạng thử lại nhé' : e.message);
+    });
+}
+function failVJob(msg){
+  vChain = null;
+  clearInterval(vPollTimer);
+  $('vJob').classList.remove('show');
+  resetVBtn();
+  toast(msg, true);
+}
+function resetVBtn(){
+  vBusy = false;
+  $('btnGoVid').disabled = false;
+  $('btnGoVid').textContent = 'DỰNG VIDEO 🎬';
+}
+
+/* ---- THƯ VIỆN VIDEO ---- */
+function loadVHist(){
+  try{ return JSON.parse(localStorage.getItem(LS_VHIST) || '[]'); }catch(_){ return []; }
+}
+function saveVHist(h){
+  localStorage.setItem(LS_VHIST, JSON.stringify(h.slice(0, 30)));
+}
+function renderVGallery(){
+  var h = loadVHist();
+  var g = $('vGallery');
+  g.innerHTML = '';
+  $('vEmpty').style.display = h.length ? 'none' : 'block';
+  $('vCnt').textContent = h.length ? h.length + ' video · lưu trên máy này' : '';
+  h.forEach(function(item, i){
+    var card = document.createElement('div');
+    card.className = 'vcard';
+    var d = new Date(item.t);
+    var time = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    card.innerHTML =
+      '<video src="' + item.url + '" controls playsinline preload="metadata"></video>' +
+      '<div class="meta"><div class="p"></div><span class="mono">' + time + '</span></div>' +
+      '<div class="acts">' +
+        '<button data-act="dl">⬇ Tải</button>' +
+        '<button data-act="ext" class="ext">✂ Extension</button>' +
+        '<button data-act="sel" class="sel">☑ Ghép</button>' +
+        '<button data-act="del" style="flex:0 0 44px">🗑</button>' +
+      '</div>';
+    card.querySelector('.p').textContent = item.prompt;
+    card.querySelector('[data-act=dl]').onclick = function(){ downloadVideo(item.url); };
+    card.querySelector('[data-act=ext]').onclick = function(){ openFramePicker(item); };
+    var selBtn = card.querySelector('[data-act=sel]');
+    var mIdx = mergeSel.indexOf(item.url);
+    if(mIdx >= 0){ selBtn.classList.add('on'); selBtn.textContent = '☑ ' + (mIdx + 1); }
+    selBtn.onclick = function(){ toggleMergeSel(item); };
+    card.querySelector('[data-act=del]').onclick = function(){
+      var hh = loadVHist(); hh.splice(i, 1); saveVHist(hh); renderVGallery();
+    };
+    g.appendChild(card);
+  });
+}
+function downloadVideo(url){
+  toast('Đang tải video...');
+  fetchBlobSmart(url,
+    function(blob){
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'IDECO_VIDEO_' + Date.now() + '.mp4';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(a.href);
+    },
+    function(){ window.open(url, '_blank'); },
+    function(st){ toast(st); }
+  );
+}
+
+
+/* Tải file về dạng blob — thử trực tiếp, bị CORS thì tự chuyển qua proxy dự phòng */
+function fetchBlobSmart(url, onOk, onFail, onStatus){
+  function tryFetch(u, next){
+    fetch(u).then(function(r){
+      if(!r.ok) throw 0;
+      return r.blob();
+    }).then(function(b){
+      if(b && b.size > 0) onOk(b); else next();
+    }).catch(next);
+  }
+  tryFetch(url, function(){
+    if(onStatus) onStatus('máy chủ chặn tải trực tiếp — đang thử qua proxy 1...');
+    tryFetch('https://corsproxy.io/?url=' + encodeURIComponent(url), function(){
+      if(onStatus) onStatus('đang thử proxy 2...');
+      tryFetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url), function(){
+        onFail();
+      });
+    });
+  });
+}
+
+
+/* ================================================================
+   GHÉP VIDEO & LỒNG TIẾNG (canvas + WebAudio + MediaRecorder)
+   ================================================================ */
+var mergeSel = [];        // danh sách url theo thứ tự bấm chọn
+var mergeItems = {};      // url -> item
+var mRecording = false;
+var mStopFlag = false;
+var mMusicUrl = null;
+
+function toggleMergeSel(item){
+  var i = mergeSel.indexOf(item.url);
+  if(i >= 0){ mergeSel.splice(i, 1); }
+  else{
+    if(mergeSel.length >= 10){ toast('Tối đa 10 đoạn mỗi lần ghép', true); return; }
+    mergeSel.push(item.url);
+    mergeItems[item.url] = item;
+  }
+  renderVGallery();
+  $('mCount').textContent = mergeSel.length;
+  $('mergeBar').classList.toggle('show', mergeSel.length > 0 && $('tabVid').style.display !== 'none');
+}
+$('btnMerge').onclick = function(){
+  if(!mergeSel.length) return;
+  renderMList();
+  $('mm').classList.add('show');
+};
+$('mmClose').onclick = function(){
+  if(mRecording){ toast('Đang ghép — bấm DỪNG & XUẤT trước nhé', true); return; }
+  var rv = $('mResVideo'); if(rv) rv.pause();
+  $('mm').classList.remove('show');
+};
+function renderMList(){
+  var box = $('mList');
+  box.innerHTML = '';
+  mergeSel.forEach(function(url, i){
+    var it = mergeItems[url] || { prompt: 'Video ' + (i + 1) };
+    var row = document.createElement('div');
+    row.className = 'mitem';
+    row.innerHTML =
+      '<span class="num2">' + (i + 1) + '</span>' +
+      '<video src="' + url + '" muted preload="metadata" playsinline></video>' +
+      '<div class="mi"></div>' +
+      '<div class="mv"><button data-m="up">▲</button><button data-m="dn">▼</button></div>' +
+      '<div class="mv"><button data-m="rm" style="color:#ff7a66">✕</button></div>';
+    row.querySelector('.mi').textContent = it.prompt || '';
+    row.querySelector('[data-m=up]').onclick = function(){ if(i > 0){ mergeSel.splice(i-1, 0, mergeSel.splice(i,1)[0]); renderMList(); renderVGallery(); } };
+    row.querySelector('[data-m=dn]').onclick = function(){ if(i < mergeSel.length-1){ mergeSel.splice(i+1, 0, mergeSel.splice(i,1)[0]); renderMList(); renderVGallery(); } };
+    row.querySelector('[data-m=rm]').onclick = function(){
+      mergeSel.splice(i, 1); renderMList(); renderVGallery();
+      $('mCount').textContent = mergeSel.length;
+      if(!mergeSel.length){ $('mm').classList.remove('show'); $('mergeBar').classList.remove('show'); }
+    };
+    box.appendChild(row);
+  });
+}
+
+/* file nhạc */
+$('aMusicBtn').onclick = function(){ $('aMusicFile').click(); };
+$('aMusicFile').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  if(mMusicUrl) URL.revokeObjectURL(mMusicUrl);
+  mMusicUrl = URL.createObjectURL(f);
+  $('aMusicBtn').textContent = '🎵 ' + f.name;
+  $('aMusic').checked = true;
+});
+
+function pickRecMime(){
+  var cands = [
+    { m: 'video/mp4;codecs="avc1.42E01E,mp4a.40.2"', ext: 'mp4' },
+    { m: 'video/mp4', ext: 'mp4' },
+    { m: 'video/webm;codecs=vp9,opus', ext: 'webm' },
+    { m: 'video/webm;codecs=vp8,opus', ext: 'webm' },
+    { m: 'video/webm', ext: 'webm' }
+  ];
+  for(var i = 0; i < cands.length; i++){
+    if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(cands[i].m)) return cands[i];
+  }
+  return { m: '', ext: 'webm' };
+}
+function fmtT(s){ var m = Math.floor(s/60), ss = Math.floor(s%60); return m + ':' + (ss<10?'0':'') + ss; }
+
+$('mGo').onclick = function(){
+  if(mRecording){ mStopFlag = true; $('mProg').textContent = 'Đang kết thúc và xuất file...'; return; }
+  startMerge();
+};
+
+function startMerge(){
+  if(!window.MediaRecorder){ toast('Trình duyệt không hỗ trợ ghi video (MediaRecorder) — dùng Chrome/Edge mới nhé', true); return; }
+  var urls = mergeSel.slice();
+  if(!urls.length) return;
+  mRecording = true; mStopFlag = false;
+  var go = $('mGo');
+  go.classList.add('rec');
+  go.innerHTML = '<span class="recdot"></span>DỪNG & XUẤT FILE';
+  $('mProg').textContent = 'Đang tải các đoạn video về (qua proxy nếu cần)...';
+
+  var micPromise = $('aMic').checked
+    ? navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })
+        .catch(function(){ toast('Không truy cập được micro — kiểm tra quyền trình duyệt', true); return null; })
+    : Promise.resolve(null);
+
+  // Tải tuần tự tất cả clip về blob (né CORS để canvas + audio không bị taint)
+  var blobs = [];
+  var chain = Promise.resolve();
+  urls.forEach(function(u, i){
+    chain = chain.then(function(){
+      return new Promise(function(res, rej){
+        $('mProg').textContent = 'Đang tải đoạn ' + (i + 1) + '/' + urls.length + '...';
+        fetchBlobSmart(u, function(b){ blobs.push(URL.createObjectURL(b)); res(); },
+          function(){ rej(new Error('Không tải được đoạn ' + (i + 1) + ' (link có thể hết hạn 24h)')); },
+          function(st){ $('mProg').textContent = 'Đoạn ' + (i + 1) + ': ' + st; });
+      });
+    });
+  });
+
+  Promise.all([chain, micPromise]).then(function(rs){
+    var micStream = rs[1];
+    runMergeRecording(blobs, micStream);
+  }).catch(function(e){
+    resetMergeUI();
+    toast(e.message || 'Lỗi tải video', true);
+  });
+}
+
+function runMergeRecording(blobUrls, micStream){
+  var cv = $('mCanvas');
+  var ctx2d = cv.getContext('2d');
+  var AC = window.AudioContext || window.webkitAudioContext;
+  var ac = new AC();
+  var dest = ac.createMediaStreamDestination();
+
+  var gOrig = ac.createGain(); gOrig.gain.value = $('aOrig').checked ? $('aOrigVol').value / 100 : 0;
+  var gMus  = ac.createGain(); gMus.gain.value  = $('aMusic').checked ? $('aMusicVol').value / 100 : 0;
+  var gMic  = ac.createGain(); gMic.gain.value  = micStream ? $('aMicVol').value / 100 : 0;
+  gOrig.connect(dest); gMus.connect(dest); gMic.connect(dest);
+  gOrig.connect(ac.destination); gMus.connect(ac.destination); // nghe được khi ghép (mic không phát loa để tránh hú)
+
+  // chỉnh volume trực tiếp trong lúc ghép
+  $('aOrigVol').oninput = function(){ gOrig.gain.value = $('aOrig').checked ? this.value / 100 : 0; };
+  $('aMusicVol').oninput = function(){ gMus.gain.value = $('aMusic').checked ? this.value / 100 : 0; };
+  $('aMicVol').oninput = function(){ if(micStream) gMic.gain.value = this.value / 100; };
+  $('aOrig').onchange = function(){ gOrig.gain.value = this.checked ? $('aOrigVol').value / 100 : 0; };
+  $('aMusic').onchange = function(){ gMus.gain.value = this.checked ? $('aMusicVol').value / 100 : 0; };
+
+  if(micStream){ ac.createMediaStreamSource(micStream).connect(gMic); }
+
+  var musicEl = null;
+  if($('aMusic').checked && mMusicUrl){
+    musicEl = new Audio(mMusicUrl);
+    musicEl.loop = true;
+    ac.createMediaElementSource(musicEl).connect(gMus);
+  }
+
+  // chuẩn bị các video element
+  var vids = blobUrls.map(function(u){
+    var v = document.createElement('video');
+    v.src = u; v.playsInline = true; v.preload = 'auto';
+    ac.createMediaElementSource(v).connect(gOrig);
+    return v;
+  });
+
+  var mime = pickRecMime();
+  var rec = null, chunks = [];
+  var started = 0;
+  var rafId = 0;
+
+  function cleanup(){
+    cancelAnimationFrame(rafId);
+    vids.forEach(function(v){ try{ v.pause(); }catch(_){} });
+    if(musicEl){ try{ musicEl.pause(); }catch(_){} }
+    if(micStream){ micStream.getTracks().forEach(function(t){ t.stop(); }); }
+    try{ ac.close(); }catch(_){}
+    // giữ blobUrls sống để preview các đoạn không lỗi; thu hồi khi ghép lại
+  }
+
+  function initRecorderAndStart(firstV){
+    // QUAN TRỌNG: đặt kích thước canvas TRƯỚC khi captureStream — đổi sau sẽ làm hỏng file
+    cv.width = firstV.videoWidth || 1280;
+    cv.height = firstV.videoHeight || 720;
+    ctx2d.fillStyle = '#000'; ctx2d.fillRect(0, 0, cv.width, cv.height);
+
+    var canvasStream = cv.captureStream(30);
+    var mixed = new MediaStream(canvasStream.getVideoTracks().concat(dest.stream.getAudioTracks()));
+    try{
+      rec = mime.m ? new MediaRecorder(mixed, { mimeType: mime.m, videoBitsPerSecond: 6000000 })
+                   : new MediaRecorder(mixed);
+    }catch(e){
+      try{ rec = new MediaRecorder(mixed); mime = { m: rec.mimeType || 'video/webm', ext: (rec.mimeType || '').indexOf('mp4') >= 0 ? 'mp4' : 'webm' }; }
+      catch(e2){ cleanup(); resetMergeUI(); toast('Trình duyệt không tạo được bộ ghi video', true); return; }
+    }
+    rec.ondataavailable = function(e){ if(e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = function(){
+      cleanup();
+      var blob = new Blob(chunks, { type: mime.m || 'video/webm' });
+      showMergeResult(blob, mime.ext);
+    };
+    rec.start(1000);
+    started = performance.now();
+    if(musicEl){ musicEl.currentTime = 0; musicEl.play().catch(function(){}); }
+    playClip(0);
+  }
+
+  function playClip(i){
+    if(mStopFlag || i >= vids.length){
+      try{ rec.stop(); }catch(_){ cleanup(); resetMergeUI(); }
+      return;
+    }
+    var v = vids[i];
+    v.currentTime = 0;
+    v.onended = function(){ playClip(i + 1); };
+    v.onerror = function(){ toast('Đoạn ' + (i + 1) + ' lỗi phát — bỏ qua', true); playClip(i + 1); };
+    v.play().catch(function(){ playClip(i + 1); });
+
+    function draw(){
+      if(mStopFlag){ return; }
+      if(v.ended){ return; }
+      var cw = cv.width, ch = cv.height, vw = v.videoWidth || cw, vh = v.videoHeight || ch;
+      if(vw && vh){
+        var k = Math.min(cw / vw, ch / vh);
+        var dw = vw * k, dh = vh * k;
+        ctx2d.fillStyle = '#000'; ctx2d.fillRect(0, 0, cw, ch);
+        ctx2d.drawImage(v, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+      }
+      var el = (performance.now() - started) / 1000;
+      $('mProg').innerHTML = '<span class="recdot"></span>Đang ghép đoạn ' + (i + 1) + '/' + vids.length + ' · ' + fmtT(el)
+        + (micStream && $('aMic').checked ? ' · 🎙 đang thu lời bình' : '');
+      rafId = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  // chờ metadata clip đầu để biết kích thước rồi mới tạo recorder
+  var v0 = vids[0];
+  $('mProg').textContent = 'Đang chuẩn bị khung hình...';
+  if(v0.readyState >= 1){ initRecorderAndStart(v0); }
+  else{
+    v0.onloadedmetadata = function(){ initRecorderAndStart(v0); };
+    v0.onerror = function(){ cleanup(); resetMergeUI(); toast('Không đọc được đoạn 1', true); };
+    v0.load();
+  }
+}
+
+/* ---- KẾT QUẢ GHÉP: PREVIEW + TẢI ---- */
+var mResBlob = null, mResUrl = null, mResExt = 'webm';
+function showMergeResult(blob, ext){
+  resetMergeUI();
+  mResBlob = blob; mResExt = ext;
+  if(mResUrl) URL.revokeObjectURL(mResUrl);
+  mResUrl = URL.createObjectURL(blob);
+  var v = $('mResVideo');
+  v.src = mResUrl;
+  $('mResInfo').textContent = '(.' + ext + ' · ' + (blob.size / 1048576).toFixed(1) + ' MB)';
+  $('mResHint').textContent = ext === 'mp4'
+    ? 'File MP4 mở được ở mọi trình phát. Xem lại ở trên trước khi tải nhé.'
+    : 'Trình duyệt này xuất định dạng WebM — xem trước ở trên hoạt động bình thường. Nếu Windows Media Player không mở được file tải về, hãy mở bằng Chrome/Edge (kéo thả file vào) hoặc VLC; đăng Zalo/Facebook/YouTube đều nhận WebM.';
+  $('mResult').style.display = 'block';
+  $('mProg').textContent = '✅ Ghép xong — xem lại bên dưới rồi bấm TẢI FILE';
+  $('mResult').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  toast('🎉 Ghép xong! Xem lại video rồi bấm TẢI FILE');
+}
+$('mResDl').onclick = function(){
+  if(!mResBlob) return;
+  var a = document.createElement('a');
+  a.href = mResUrl;
+  a.download = 'IDECO_GHEP_' + Date.now() + '.' + mResExt;
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Đã tải file về máy — kiểm tra thư mục Tải về');
+};
+$('mResAgain').onclick = function(){
+  $('mResult').style.display = 'none';
+  $('mResVideo').pause();
+  $('mProg').textContent = 'Sẵn sàng — chỉnh âm thanh/thứ tự rồi bấm bắt đầu ghép lại';
+};
+
+function resetMergeUI(){
+  mRecording = false; mStopFlag = false;
+  var go = $('mGo');
+  go.classList.remove('rec');
+  go.textContent = '▶ BẮT ĐẦU GHÉP & XUẤT FILE';
+}
+
+/* ---- EXTENSION: CHỌN ĐIỂM NỐI ---- */
+var fpItem = null; // {url, taskId, prompt}
+var fpBlobUrl = null;
+function openFramePicker(item){
+  fpItem = item;
+  toast('Đang tải video để chọn frame (chờ chút)...');
+  fetchBlobSmart(item.url,
+    function(blob){
+      if(fpBlobUrl) URL.revokeObjectURL(fpBlobUrl);
+      fpBlobUrl = URL.createObjectURL(blob);
+      var v = $('fpVideo');
+      v.onloadedmetadata = null; v.onerror = null;
+      v.onloadedmetadata = function(){ fpReady(v); };
+      v.onerror = function(){ toast('Không đọc được video này', true); };
+      v.src = fpBlobUrl;
+      v.load();
+      if(v.readyState >= 1) fpReady(v);
+    },
+    function(){
+      toast('Không tải được video (link 24h có thể đã hết hạn hoặc mạng chặn proxy)', true);
+    },
+    function(st){ toast(st); }
+  );
+}
+function fpReady(v){
+  if($('fp').classList.contains('show')) return;
+  var dur = (v.duration && isFinite(v.duration)) ? v.duration : 15;
+  $('fpRange').max = Math.max(1, Math.round(dur * FPS));
+  $('fpRange').value = Math.round(dur * FPS); // mặc định frame cuối
+  $('fpDur').textContent = dur.toFixed(2) + 's';
+  seekFrame(Number($('fpRange').value));
+  $('fp').classList.add('show');
+}
+function seekFrame(frame){
+  var v = $('fpVideo');
+  var t = frame / FPS;
+  if(v.duration && isFinite(v.duration)) t = Math.min(v.duration - 0.001, Math.max(0, t));
+  try{ v.currentTime = t; }catch(_){}
+  $('fpCur').textContent = t.toFixed(2) + 's · frame ' + frame;
+}
+$('fpRange').addEventListener('input', function(){ seekFrame(Number(this.value)); });
+function stepFrame(n){
+  var r = $('fpRange');
+  var f = Math.min(Number(r.max), Math.max(0, Number(r.value) + n));
+  r.value = f;
+  seekFrame(f);
+}
+$('fpM5').onclick = function(){ stepFrame(-5); };
+$('fpM1').onclick = function(){ stepFrame(-1); };
+$('fpP1').onclick = function(){ stepFrame(1); };
+$('fpP5').onclick = function(){ stepFrame(5); };
+$('fpClose').onclick = function(){
+  $('fp').classList.remove('show');
+  $('fpVideo').pause();
+};
+
+$('fpCut').onclick = function(){
+  var v = $('fpVideo');
+  if(!v.videoWidth){ toast('Video chưa sẵn sàng — chờ hiện hình rồi bấm lại nhé', true); return; }
+  try{
+    var cv = document.createElement('canvas');
+    cv.width = v.videoWidth; cv.height = v.videoHeight;
+    cv.getContext('2d').drawImage(v, 0, 0);
+    var dataUrl = cv.toDataURL('image/jpeg', 0.92);
+    vRefs = [{ dataUrl: dataUrl, uploadedUrl: null }, null, null, null, null];
+    renderVSlots();
+    $('fp').classList.remove('show');
+    v.pause();
+    switchTab(true);
+    $('vPrompt').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast('✂ Đã cắt frame → nạp làm Ảnh 1. Nhập mô tả và bấm DỰNG VIDEO để nối tiếp!');
+  }catch(e){
+    toast('Trình duyệt chặn cắt frame (' + e.name + ') — dùng nút NỐI TRÊN SERVER bên dưới nhé', true);
+  }
+};
+
+/* Phương án phụ: nối dài trực tiếp trên máy chủ Kie (không cần cắt frame) */
+$('fpExtBtn').onclick = function(){
+  if(!fpItem) return;
+  if(!fpItem.taskId){ toast('Video cũ không lưu mã tác vụ — chỉ nối server được với video mới tạo', true); return; }
+  if(vBusy){ toast('Đang có video xử lý — chờ xong nhé', true); return; }
+  var sec = Number($('fpRange').value) / FPS;
+  var extendAt = Math.max(2, Math.round(sec));
+  var addSec = $('fpExtDur').value;
+  var basePrompt = $('vPrompt').value.trim() || fpItem.prompt || '';
+  $('fp').classList.remove('show');
+  $('fpVideo').pause();
+  switchTab(true);
+  runExtend(fpItem.taskId, basePrompt, extendAt, addSec,
+    (basePrompt || 'Nối video') + ' (nối tại giây ' + extendAt + ' · +' + addSec + 's)');
+};
+
+renderVGallery();
 
 /* ================= KHỞI ĐỘNG ================= */
 renderGallery();
