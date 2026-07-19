@@ -263,9 +263,9 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
   <div class="sec">
     <label class="lbl">Ảnh tham chiếu (tùy chọn · tối đa 3)</label>
     <div class="refs" id="refs">
-      <div class="slot" data-i="0"><button class="x">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></div>
-      <div class="slot" data-i="1"><button class="x">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></div>
-      <div class="slot" data-i="2"><button class="x">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></div>
+      <label class="slot" data-i="0" for="fileInput"><button class="x" type="button">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></label>
+      <label class="slot" data-i="1" for="fileInput"><button class="x" type="button">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></label>
+      <label class="slot" data-i="2" for="fileInput"><button class="x" type="button">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></label>
     </div>
     <div class="ref-hint">Đính kèm ảnh sản phẩm / logo / ảnh mẫu — AI sẽ tạo ảnh mới dựa trên ảnh này. Không đính kèm thì AI vẽ hoàn toàn từ mô tả.</div>
     <input type="file" id="fileInput" accept="image/*">
@@ -334,11 +334,11 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
     <div class="sec">
       <label class="lbl">Ảnh tham chiếu (tối đa 5 — thứ tự @image1 → @image5)</label>
       <div class="refs5" id="vRefs">
-        <div class="slot" data-i="0"><span class="num">1</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 1</span></div>
-        <div class="slot" data-i="1"><span class="num">2</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 2</span></div>
-        <div class="slot" data-i="2"><span class="num">3</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 3</span></div>
-        <div class="slot" data-i="3"><span class="num">4</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 4</span></div>
-        <div class="slot" data-i="4"><span class="num">5</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 5</span></div>
+        <label class="slot" data-i="0" for="vFileInput"><span class="num">1</span><button class="x" type="button">✕</button><span class="plus">＋</span><span>Ảnh 1</span></label>
+        <label class="slot" data-i="1" for="vFileInput"><span class="num">2</span><button class="x" type="button">✕</button><span class="plus">＋</span><span>Ảnh 2</span></label>
+        <label class="slot" data-i="2" for="vFileInput"><span class="num">3</span><button class="x" type="button">✕</button><span class="plus">＋</span><span>Ảnh 3</span></label>
+        <label class="slot" data-i="3" for="vFileInput"><span class="num">4</span><button class="x" type="button">✕</button><span class="plus">＋</span><span>Ảnh 4</span></label>
+        <label class="slot" data-i="4" for="vFileInput"><span class="num">5</span><button class="x" type="button">✕</button><span class="plus">＋</span><span>Ảnh 5</span></label>
       </div>
       <div class="ref-hint">Bấm nút 🎬 trên ảnh ở tab Tạo Ảnh để nạp qua theo thứ tự bấm. Grok 1.5 nhận 1 khung tham chiếu — chọn nhiều ảnh thì app tự ghép thành 1 khung theo thứ tự 1→5 trước khi gửi.</div>
       <input type="file" id="vFileInput" accept="image/*">
@@ -561,10 +561,11 @@ Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(c){
 });
 
 /* ================= ẢNH THAM CHIẾU ================= */
-Array.prototype.forEach.call(document.querySelectorAll('.slot'), function(slot){
+Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(slot){
   slot.addEventListener('click', function(e){
     var i = Number(slot.getAttribute('data-i'));
     if(e.target.classList.contains('x')){
+      e.preventDefault();
       e.stopPropagation();
       refImages[i] = null;
       renderSlots();
@@ -572,7 +573,6 @@ Array.prototype.forEach.call(document.querySelectorAll('.slot'), function(slot){
     }
     pickSlot = i;
     $('fileInput').value = '';
-    $('fileInput').click();
   });
 });
 
@@ -609,7 +609,7 @@ function compressImage(file, maxSide, quality, cb){
 }
 
 function renderSlots(){
-  Array.prototype.forEach.call(document.querySelectorAll('.slot'), function(slot){
+  Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(slot){
     var i = Number(slot.getAttribute('data-i'));
     var old = slot.querySelector('img');
     if(old) old.remove();
@@ -901,6 +901,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#vRefs .slot'), function
   slot.addEventListener('click', function(e){
     var i = Number(slot.getAttribute('data-i'));
     if(e.target.classList.contains('x')){
+      e.preventDefault();
       e.stopPropagation();
       vRefs[i] = null;
       renderVSlots();
@@ -908,7 +909,6 @@ Array.prototype.forEach.call(document.querySelectorAll('#vRefs .slot'), function
     }
     vPickSlot = i;
     $('vFileInput').value = '';
-    $('vFileInput').click();
   });
 });
 $('vFileInput').addEventListener('change', function(){
