@@ -263,9 +263,9 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
   <div class="sec">
     <label class="lbl">Ảnh tham chiếu (tùy chọn · tối đa 3)</label>
     <div class="refs" id="refs">
-      <label class="slot" data-i="0" for="fileInput"><button class="x" type="button">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></label>
-      <label class="slot" data-i="1" for="fileInput"><button class="x" type="button">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></label>
-      <label class="slot" data-i="2" for="fileInput"><button class="x" type="button">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></label>
+      <div class="slot" data-i="0"><button class="x">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></div>
+      <div class="slot" data-i="1"><button class="x">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></div>
+      <div class="slot" data-i="2"><button class="x">✕</button><span class="plus">＋</span><span>Thêm ảnh</span></div>
     </div>
     <div class="ref-hint">Đính kèm ảnh sản phẩm / logo / ảnh mẫu — AI sẽ tạo ảnh mới dựa trên ảnh này. Không đính kèm thì AI vẽ hoàn toàn từ mô tả.</div>
     <input type="file" id="fileInput" accept="image/*">
@@ -334,14 +334,22 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
     <div class="sec">
       <label class="lbl">Ảnh tham chiếu (tối đa 5 — thứ tự @image1 → @image5)</label>
       <div class="refs5" id="vRefs">
-        <label class="slot" data-i="0" for="vFileInput"><span class="num">1</span><button class="x" type="button">✕</button><span class="plus">＋</span><span>Ảnh 1</span></label>
-        <label class="slot" data-i="1" for="vFileInput"><span class="num">2</span><button class="x" type="button">✕</button><span class="plus">＋</span><span>Ảnh 2</span></label>
-        <label class="slot" data-i="2" for="vFileInput"><span class="num">3</span><button class="x" type="button">✕</button><span class="plus">＋</span><span>Ảnh 3</span></label>
-        <label class="slot" data-i="3" for="vFileInput"><span class="num">4</span><button class="x" type="button">✕</button><span class="plus">＋</span><span>Ảnh 4</span></label>
-        <label class="slot" data-i="4" for="vFileInput"><span class="num">5</span><button class="x" type="button">✕</button><span class="plus">＋</span><span>Ảnh 5</span></label>
+        <div class="slot" data-i="0"><span class="num">1</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 1</span></div>
+        <div class="slot" data-i="1"><span class="num">2</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 2</span></div>
+        <div class="slot" data-i="2"><span class="num">3</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 3</span></div>
+        <div class="slot" data-i="3"><span class="num">4</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 4</span></div>
+        <div class="slot" data-i="4"><span class="num">5</span><button class="x">✕</button><span class="plus">＋</span><span>Ảnh 5</span></div>
       </div>
       <div class="ref-hint">Bấm nút 🎬 trên ảnh ở tab Tạo Ảnh để nạp qua theo thứ tự bấm. Grok 1.5 nhận 1 khung tham chiếu — chọn nhiều ảnh thì app tự ghép thành 1 khung theo thứ tự 1→5 trước khi gửi.</div>
       <input type="file" id="vFileInput" accept="image/*">
+    </div>
+
+    <div class="sec">
+      <label class="lbl">Model dựng video</label>
+      <select id="vModel">
+        <option value="grok" selected>⚡ Grok Imagine 1.5 — #1 image-to-video, có tiếng</option>
+        <option value="seedance">🎥 Seedance 2.0 Mini — nhận nhiều ảnh tham chiếu, điện ảnh</option>
+      </select>
     </div>
 
     <div class="sec optrow" style="grid-template-columns:1fr 1fr 1fr;display:grid;gap:10px">
@@ -351,7 +359,7 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
           <option value="6">6 giây</option>
           <option value="10">10 giây</option>
           <option value="15">15 giây</option>
-          <option value="30">30 giây (2×15s)</option>
+          <option value="30" id="vDur30">30 giây (Grok 2×15s)</option>
         </select>
       </div>
       <div>
@@ -373,7 +381,7 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
         </select>
       </div>
     </div>
-    <div class="ref-hint" style="margin:-6px 2px 12px">Grok hỗ trợ tối đa 15s/lần. Chọn 30s: app tự dựng đoạn 1 (15s) → tự cắt frame cuối → dựng nối đoạn 2 (15s).</div>
+    <div class="ref-hint" style="margin:-6px 2px 12px"><span id="vDurHint">Grok tối đa 15s/lần — chọn 30s app tự dựng 15s rồi nối thêm 15s trên server. Seedance 2.0 Mini: 6/10/15s, nhận tối đa 5 ảnh tham chiếu riêng biệt.</span></div>
 
     <div class="job" id="vJob">
       <div class="jrow">
@@ -381,9 +389,6 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
         <span class="jstate mono" id="vJobState"></span>
       </div>
       <div class="bar"><i id="vJobBar"></i></div>
-      <div id="vJobRefWrap" style="display:none;margin-top:9px;font-size:11.5px;color:#a29d94">
-        Ảnh tham chiếu đã gửi lên Grok: <a id="vJobRefLink" href="javascript:void(0)" target="_blank" style="color:#ffb257;word-break:break-all">xem link</a>
-      </div>
     </div>
 
     <div class="gal-head">
@@ -561,11 +566,10 @@ Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(c){
 });
 
 /* ================= ẢNH THAM CHIẾU ================= */
-Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(slot){
+Array.prototype.forEach.call(document.querySelectorAll('.slot'), function(slot){
   slot.addEventListener('click', function(e){
     var i = Number(slot.getAttribute('data-i'));
     if(e.target.classList.contains('x')){
-      e.preventDefault();
       e.stopPropagation();
       refImages[i] = null;
       renderSlots();
@@ -573,6 +577,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(
     }
     pickSlot = i;
     $('fileInput').value = '';
+    $('fileInput').click();
   });
 });
 
@@ -609,7 +614,7 @@ function compressImage(file, maxSide, quality, cb){
 }
 
 function renderSlots(){
-  Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(slot){
+  Array.prototype.forEach.call(document.querySelectorAll('.slot'), function(slot){
     var i = Number(slot.getAttribute('data-i'));
     var old = slot.querySelector('img');
     if(old) old.remove();
@@ -792,7 +797,7 @@ function renderGallery(){
     var time = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     card.innerHTML =
       '<img loading="lazy" alt="Ảnh AI">' +
-      '<div class="meta"><div class="p"></div><span class="mono">' + time + '</span></div>' +
+      '<div class="meta"><div class="p"></div><span class="mono">' + time + ' · ' + (item.engine === 'seedance' ? 'Seedance 2.0 Mini' : 'Grok 1.5') + '</span></div>' +
       '<div class="acts">' +
         '<button data-act="dl">⬇ Tải</button>' +
         '<button data-act="re">↻ Tạo lại</button>' +
@@ -851,6 +856,7 @@ var LS_VHIST = 'taoanh_grokvideo_history';
 var vBusy = false, vPollTimer = null;
 var vRefs = [null, null, null, null, null]; // {dataUrl, uploadedUrl}
 var vChain = null; // {stage:1|2, prompt} — chuỗi tự động cho video 30s (2 đoạn 15s)
+var vLastEngine = 'grok'; // model của lần dựng đang chạy — lưu vào lịch sử
 var vPickSlot = 0;
 var FPS = 30; // bước frame khi tua
 
@@ -901,7 +907,6 @@ Array.prototype.forEach.call(document.querySelectorAll('#vRefs .slot'), function
   slot.addEventListener('click', function(e){
     var i = Number(slot.getAttribute('data-i'));
     if(e.target.classList.contains('x')){
-      e.preventDefault();
       e.stopPropagation();
       vRefs[i] = null;
       renderVSlots();
@@ -909,6 +914,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#vRefs .slot'), function
     }
     vPickSlot = i;
     $('vFileInput').value = '';
+    $('vFileInput').click();
   });
 });
 $('vFileInput').addEventListener('change', function(){
@@ -960,6 +966,13 @@ function uploadVRefs(){
 
 /* ---- DỰNG VIDEO ---- */
 $('btnGoVid').onclick = generateVideo;
+
+/* Đổi model: Seedance không có chế độ 30s (extend là API riêng của Grok) */
+$('vModel').addEventListener('change', function(){
+  var sd = this.value === 'seedance';
+  $('vDur30').disabled = sd;
+  if(sd && $('vDur').value === '30') $('vDur').value = '15';
+});
 
 /* Ghép nhiều ảnh tham chiếu thành 1 khung duy nhất (Grok chỉ nhận 1 ảnh) —
    xếp ngang theo thứ tự 1→5, cùng chiều cao 1024px */
@@ -1026,13 +1039,11 @@ function uploadOneRef(dataUrl){
 function createTaskFallback(models, i){
   var m = models[i];
   updateVJob('đang gửi yêu cầu (' + m.model + ')...', 16 + i * 2);
-  console.log('[IDECO createTask] model=' + m.model, m.input);
   return fetch(API_BASE + '/api/v1/jobs/createTask', {
     method: 'POST', headers: headers(),
     body: JSON.stringify({ model: m.model, input: m.input })
   }).then(function(r){ return r.json(); })
     .then(function(d){
-      console.log('[IDECO createTask] response', d);
       if(d.code === 401) throw new Error('API key không hợp lệ hoặc hết hạn (401)');
       if(d.code === 402) throw new Error('Tài khoản hết credits — nạp thêm trên kie.ai nhé (402)');
       if(d.code === 200 && d.data && d.data.taskId) return d;
@@ -1062,7 +1073,45 @@ function generateVideo(){
   }
   var aspect = $('vAspect').value;
   var res = $('vRes').value;
+  var engine = $('vModel').value; // 'grok' | 'seedance'
 
+  /* ===== SEEDANCE 2.0 MINI ===== */
+  if(engine === 'seedance'){
+    var sdDur = Math.min(dur, 15);
+    if(!refs.length){
+      // text-to-video
+      var inp = { prompt: prompt, resolution: res, duration: sdDur, generate_audio: true };
+      if(aspect !== 'auto') inp.aspect_ratio = aspect;
+      createTaskFallback([{ model: 'bytedance/seedance-2-mini', input: inp }], 0)
+        .then(afterCreate).catch(onGenErr);
+      return;
+    }
+    // có ảnh → upload từng ảnh (Seedance nhận nhiều ảnh, KHÔNG cần ghép)
+    updateVJob('đang chuẩn bị ' + refs.length + ' ảnh tham chiếu...', 7);
+    var chain = Promise.resolve();
+    var urls = [];
+    refs.forEach(function(r, idx){
+      chain = chain.then(function(){
+        if(r.uploadedUrl){ urls.push(r.uploadedUrl); return; }
+        updateVJob('đang tải ảnh ' + (idx + 1) + '/' + refs.length + ' lên...', 8 + idx * 2);
+        return uploadOneRef(r.dataUrl).then(function(u){ r.uploadedUrl = u; urls.push(u); });
+      });
+    });
+    chain.then(function(){
+      var inp = { prompt: prompt, resolution: res, duration: sdDur, generate_audio: true };
+      if(aspect !== 'auto') inp.aspect_ratio = aspect;
+      if(urls.length === 1){
+        inp.first_frame_url = urls[0]; // 1 ảnh: làm khung hình đầu chính xác
+      } else {
+        inp.reference_image_urls = urls; // nhiều ảnh: tham chiếu đa phương thức theo thứ tự
+        inp.prompt = prompt + '. Tham chiếu ' + urls.length + ' ảnh đính kèm theo thứ tự, giữ nhất quán nhân vật và sản phẩm trong ảnh.';
+      }
+      return createTaskFallback([{ model: 'bytedance/seedance-2-mini', input: inp }], 0);
+    }).then(afterCreate).catch(onGenErr);
+    return;
+  }
+
+  /* ===== GROK IMAGINE 1.5 ===== */
   if(!refs.length){
     /* Không có ảnh → text-to-video (model cũ, 1.5 bắt buộc phải có ảnh) */
     createTaskFallback([{
@@ -1073,41 +1122,35 @@ function generateVideo(){
     return;
   }
 
-  /* Có ảnh → GROK IMAGINE IMAGE-TO-VIDEO (đúng tên model theo docs.kie.ai, chỉ nhận 1 ảnh) */
+  /* Có ảnh → GROK IMAGINE VIDEO 1.5 (image-to-video, 1 ảnh duy nhất) */
   updateVJob(refs.length > 1 ? 'đang ghép ' + refs.length + ' ảnh thành 1 khung tham chiếu...' : 'đang chuẩn bị ảnh tham chiếu...', 7);
   buildRefComposite(refs, function(dataUrl, readyUrl){
     if(!dataUrl && !readyUrl){ failVJob('Không xử lý được ảnh tham chiếu — thử xóa và chọn lại ảnh'); return; }
     var urlPromise = readyUrl ? Promise.resolve(readyUrl)
       : (updateVJob('đang tải ảnh tham chiếu lên...', 11), uploadOneRef(dataUrl));
     urlPromise.then(function(imgUrl){
-      console.log('[IDECO] ảnh tham chiếu URL:', imgUrl);
-      var refLink = $('vJobRefLink');
-      refLink.setAttribute('href', imgUrl);
-      $('vJobRefWrap').style.display = 'block';
-      updateVJob('đã có ảnh tham chiếu — đang gửi yêu cầu dựng video...', 14);
-      // Grok bắt buộc prompt phải nhắc tới ảnh bằng @image1 thì mới thực sự dùng ảnh làm tham chiếu
+      // Grok yêu cầu prompt nhắc tới ảnh bằng @image1
       var p = /@image\d/.test(prompt) ? prompt : ('@image1 ' + prompt);
       if(refs.length > 1) p += '. Ảnh tham chiếu gồm ' + refs.length + ' hình xếp theo thứ tự từ trái sang phải.';
-      // duration API chỉ chấp nhận chuỗi '6' | '10' | '15'
-      var durStr = dur >= 15 ? '15' : (dur >= 10 ? '10' : '6');
-      var input = { image_urls: [imgUrl], prompt: p, mode: 'normal', duration: durStr, resolution: res };
-      // 'auto' không phải giá trị hợp lệ của API — bỏ hẳn trường này để Grok tự theo kích thước ảnh
-      if(aspect !== 'auto') input.aspect_ratio = aspect;
+      var input15 = { prompt: p, image_urls: [imgUrl], aspect_ratio: aspect, resolution: res, duration: dur };
+      var inputOld = { prompt: p, image_urls: [imgUrl], mode: 'normal', duration: String(Math.min(dur, 15)),
+                       resolution: res, aspect_ratio: aspect === 'auto' ? '3:4' : aspect };
       return createTaskFallback([
-        { model: 'grok-imagine/image-to-video', input: input }
+        { model: 'grok-imagine-video-1.5', input: input15 },
+        { model: 'grok-imagine/video-1.5', input: input15 },
+        { model: 'grok-imagine/image-to-video', input: inputOld }
       ], 0);
     }).then(afterCreate).catch(onGenErr);
   });
 
   function afterCreate(d){
     var pTag = vChain ? ' (phần ' + vChain.stage + '/2 · 15s)' : '';
+    vLastEngine = engine;
     pollVideoTask(d.data.taskId, prompt + pTag);
   }
   function onGenErr(e){
-    console.error('[IDECO] lỗi dựng video:', e);
     failVJob(e.message === 'Failed to fetch'
-      ? 'Không gửi được yêu cầu lên máy chủ — nếu bạn đang mở file này bằng cách nhấp đúp (đường dẫn bắt đầu bằng file:///), hãy chạy qua server (ví dụ mở bằng Live Server / localhost) rồi thử lại' 
-      : e.message);
+      ? 'Không kết nối được máy chủ — kiểm tra mạng thử lại nhé' : e.message);
   }
 }
 function pollVideoTask(taskId, prompt){
@@ -1146,7 +1189,6 @@ function pollVideoTask(taskId, prompt){
 function showVJob(prompt, state, pct){
   $('vJob').classList.add('show');
   $('vJobPrompt').textContent = prompt;
-  $('vJobRefWrap').style.display = 'none';
   updateVJob(state, pct);
   $('vJob').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -1161,7 +1203,7 @@ function finishVJob(urls, prompt, credits, taskId){
   resetVBtn();
   var now = Date.now();
   var h = loadVHist();
-  urls.forEach(function(u){ h.unshift({ url: u, prompt: prompt, t: now, taskId: taskId }); });
+  urls.forEach(function(u){ h.unshift({ url: u, prompt: prompt, t: now, taskId: taskId, engine: vLastEngine }); });
   saveVHist(h);
   renderVGallery();
   refreshCredits();
@@ -1184,6 +1226,7 @@ function finishVJob(urls, prompt, credits, taskId){
 
 /* Gọi API grok-imagine/extend — nối video trên server Kie, không cần tải video về máy */
 function runExtend(taskId, prompt, extendAt, extendTimes, histLabel){
+  vLastEngine = 'grok';
   vBusy = true;
   $('btnGoVid').disabled = true;
   $('btnGoVid').textContent = 'ĐANG NỐI VIDEO...';
@@ -1245,7 +1288,7 @@ function renderVGallery(){
     var time = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     card.innerHTML =
       '<video src="' + item.url + '" controls playsinline preload="metadata"></video>' +
-      '<div class="meta"><div class="p"></div><span class="mono">' + time + '</span></div>' +
+      '<div class="meta"><div class="p"></div><span class="mono">' + time + ' · ' + (item.engine === 'seedance' ? 'Seedance 2.0 Mini' : 'Grok 1.5') + '</span></div>' +
       '<div class="acts">' +
         '<button data-act="dl">⬇ Tải</button>' +
         '<button data-act="ext" class="ext">✂ Extension</button>' +
@@ -1296,10 +1339,7 @@ function fetchBlobSmart(url, onOk, onFail, onStatus){
     tryFetch('https://corsproxy.io/?url=' + encodeURIComponent(url), function(){
       if(onStatus) onStatus('đang thử proxy 2...');
       tryFetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url), function(){
-        if(onStatus) onStatus('đang thử proxy 3...');
-        tryFetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url), function(){
-          onFail();
-        });
+        onFail();
       });
     });
   });
@@ -1591,42 +1631,26 @@ function resetMergeUI(){
 /* ---- EXTENSION: CHỌN ĐIỂM NỐI ---- */
 var fpItem = null; // {url, taskId, prompt}
 var fpBlobUrl = null;
-var fpUsingBlob = false; // true nếu video đang phát từ blob (đã tải qua proxy) — canvas chắc chắn cắt được
 function openFramePicker(item){
   fpItem = item;
-  fpUsingBlob = false;
-  toast('Đang mở video để chọn frame...');
-  var v = $('fpVideo');
-  v.onloadedmetadata = null; v.onerror = null;
-
-  // Bước 1: thử phát trực tiếp từ link Kie (không cần proxy, không cần CORS) — mở khung chọn frame ngay khi có metadata.
-  // Lưu ý: KHÔNG bật crossOrigin ở bước này — nếu server Kie không hỗ trợ CORS, bật crossOrigin sẽ khiến
-  // trình duyệt chặn tải hẳn (thay vì chỉ "khoá" canvas), gây đúng lỗi "không bắt được link" như trước.
-  // Nút "Nối trên server" chỉ cần taskId nên vẫn dùng được kể cả khi bước cắt-frame (canvas) sau này bị chặn CORS.
-  v.crossOrigin = null;
-  v.onerror = function(){
-    // Bước 2: phát trực tiếp thất bại hẳn (không phải do CORS canvas mà do lỗi tải) → thử qua proxy để lấy blob
-    toast('Không phát được trực tiếp — đang thử qua proxy dự phòng...');
-    fetchBlobSmart(item.url,
-      function(blob){
-        if(fpBlobUrl) URL.revokeObjectURL(fpBlobUrl);
-        fpBlobUrl = URL.createObjectURL(blob);
-        fpUsingBlob = true;
-        v.crossOrigin = null;
-        v.onerror = function(){ toast('Không đọc được video này', true); };
-        v.onloadedmetadata = function(){ fpReady(v); };
-        v.src = fpBlobUrl;
-        v.load();
-      },
-      function(){
-        toast('Không tải được video (link 24h có thể đã hết hạn hoặc mạng chặn proxy) — nếu video này mới tạo, có thể vẫn dùng nút NỐI TRÊN SERVER', true);
-      },
-      function(st){ toast(st); }
-    );
-  };
-  v.onloadedmetadata = function(){ fpReady(v); };
-  v.src = item.url;
-  v.load();
+  toast('Đang tải video để chọn frame (chờ chút)...');
+  fetchBlobSmart(item.url,
+    function(blob){
+      if(fpBlobUrl) URL.revokeObjectURL(fpBlobUrl);
+      fpBlobUrl = URL.createObjectURL(blob);
+      var v = $('fpVideo');
+      v.onloadedmetadata = null; v.onerror = null;
+      v.onloadedmetadata = function(){ fpReady(v); };
+      v.onerror = function(){ toast('Không đọc được video này', true); };
+      v.src = fpBlobUrl;
+      v.load();
+      if(v.readyState >= 1) fpReady(v);
+    },
+    function(){
+      toast('Không tải được video (link 24h có thể đã hết hạn hoặc mạng chặn proxy)', true);
+    },
+    function(st){ toast(st); }
+  );
 }
 function fpReady(v){
   if($('fp').classList.contains('show')) return;
@@ -1660,62 +1684,30 @@ $('fpClose').onclick = function(){
   $('fpVideo').pause();
 };
 
-function tryCutFrame(v){
-  var cv = document.createElement('canvas');
-  cv.width = v.videoWidth; cv.height = v.videoHeight;
-  cv.getContext('2d').drawImage(v, 0, 0);
-  return cv.toDataURL('image/jpeg', 0.92); // ném SecurityError nếu canvas bị "khoá" (tainted) do phát trực tiếp không CORS
-}
-function applyCutFrame(dataUrl){
-  vRefs = [{ dataUrl: dataUrl, uploadedUrl: null }, null, null, null, null];
-  renderVSlots();
-  $('fp').classList.remove('show');
-  $('fpVideo').pause();
-  switchTab(true);
-  $('vPrompt').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  toast('✂ Đã cắt frame → nạp làm Ảnh 1. Nhập mô tả và bấm DỰNG VIDEO để nối tiếp!');
-}
 $('fpCut').onclick = function(){
   var v = $('fpVideo');
   if(!v.videoWidth){ toast('Video chưa sẵn sàng — chờ hiện hình rồi bấm lại nhé', true); return; }
   try{
-    applyCutFrame(tryCutFrame(v));
+    var cv = document.createElement('canvas');
+    cv.width = v.videoWidth; cv.height = v.videoHeight;
+    cv.getContext('2d').drawImage(v, 0, 0);
+    var dataUrl = cv.toDataURL('image/jpeg', 0.92);
+    vRefs = [{ dataUrl: dataUrl, uploadedUrl: null }, null, null, null, null];
+    renderVSlots();
+    $('fp').classList.remove('show');
+    v.pause();
+    switchTab(true);
+    $('vPrompt').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast('✂ Đã cắt frame → nạp làm Ảnh 1. Nhập mô tả và bấm DỰNG VIDEO để nối tiếp!');
   }catch(e){
-    if(fpUsingBlob || !fpItem){
-      // đã phát từ blob rồi mà vẫn lỗi -> không phải do CORS, dùng phương án server
-      toast('Trình duyệt chặn cắt frame (' + e.name + ') — dùng nút NỐI TRÊN SERVER bên dưới nhé', true);
-      return;
-    }
-    // đang phát trực tiếp (không CORS) nên canvas bị khoá -> tự tải lại qua proxy để cắt được
-    var frameAt = Number($('fpRange').value);
-    toast('Video đang phát trực tiếp nên chưa cắt được — đang tải bản đầy đủ qua proxy để cắt...');
-    fetchBlobSmart(fpItem.url,
-      function(blob){
-        if(fpBlobUrl) URL.revokeObjectURL(fpBlobUrl);
-        fpBlobUrl = URL.createObjectURL(blob);
-        fpUsingBlob = true;
-        var v2 = $('fpVideo');
-        v2.crossOrigin = null;
-        v2.onerror = function(){ toast('Không đọc được video này', true); };
-        v2.onloadedmetadata = function(){
-          seekFrame(frameAt);
-          setTimeout(function(){
-            try{ applyCutFrame(tryCutFrame(v2)); }
-            catch(e2){ toast('Trình duyệt chặn cắt frame (' + e2.name + ') — dùng nút NỐI TRÊN SERVER bên dưới nhé', true); }
-          }, 150); // chờ khung hình vẽ xong sau khi seek
-        };
-        v2.src = fpBlobUrl;
-        v2.load();
-      },
-      function(){ toast('Không tải được video qua proxy — dùng nút NỐI TRÊN SERVER bên dưới nhé', true); },
-      function(st){ toast(st); }
-    );
+    toast('Trình duyệt chặn cắt frame (' + e.name + ') — dùng nút NỐI TRÊN SERVER bên dưới nhé', true);
   }
 };
 
 /* Phương án phụ: nối dài trực tiếp trên máy chủ Kie (không cần cắt frame) */
 $('fpExtBtn').onclick = function(){
   if(!fpItem) return;
+  if(fpItem.engine === 'seedance'){ toast('Nối server chỉ áp dụng cho video Grok — với Seedance hãy dùng nút CẮT FRAME phía trên', true); return; }
   if(!fpItem.taskId){ toast('Video cũ không lưu mã tác vụ — chỉ nối server được với video mới tạo', true); return; }
   if(vBusy){ toast('Đang có video xử lý — chờ xong nhé', true); return; }
   var sec = Number($('fpRange').value) / FPS;
