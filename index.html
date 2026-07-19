@@ -389,6 +389,9 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
         <span class="jstate mono" id="vJobState"></span>
       </div>
       <div class="bar"><i id="vJobBar"></i></div>
+      <div id="vJobRefWrap" style="display:none;margin-top:9px;font-size:11.5px;color:#a29d94">
+        Ảnh tham chiếu đã gửi lên model: <a id="vJobRefLink" href="javascript:void(0)" target="_blank" style="color:#ffb257;word-break:break-all">xem link</a>
+      </div>
     </div>
 
     <div class="gal-head">
@@ -566,7 +569,7 @@ Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(c){
 });
 
 /* ================= ẢNH THAM CHIẾU ================= */
-Array.prototype.forEach.call(document.querySelectorAll('.slot'), function(slot){
+Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(slot){
   slot.addEventListener('click', function(e){
     var i = Number(slot.getAttribute('data-i'));
     if(e.target.classList.contains('x')){
@@ -614,7 +617,7 @@ function compressImage(file, maxSide, quality, cb){
 }
 
 function renderSlots(){
-  Array.prototype.forEach.call(document.querySelectorAll('.slot'), function(slot){
+  Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(slot){
     var i = Number(slot.getAttribute('data-i'));
     var old = slot.querySelector('img');
     if(old) old.remove();
@@ -1039,11 +1042,13 @@ function uploadOneRef(dataUrl){
 function createTaskFallback(models, i){
   var m = models[i];
   updateVJob('đang gửi yêu cầu (' + m.model + ')...', 16 + i * 2);
+  console.log('[IDECO createTask] model=' + m.model, m.input);
   return fetch(API_BASE + '/api/v1/jobs/createTask', {
     method: 'POST', headers: headers(),
     body: JSON.stringify({ model: m.model, input: m.input })
   }).then(function(r){ return r.json(); })
     .then(function(d){
+      console.log('[IDECO createTask] response', d);
       if(d.code === 401) throw new Error('API key không hợp lệ hoặc hết hạn (401)');
       if(d.code === 402) throw new Error('Tài khoản hết credits — nạp thêm trên kie.ai nhé (402)');
       if(d.code === 200 && d.data && d.data.taskId) return d;
@@ -1098,15 +1103,21 @@ function generateVideo(){
       });
     });
     chain.then(function(){
-      var inp = { prompt: prompt, resolution: res, duration: sdDur, generate_audio: true };
-      if(aspect !== 'auto') inp.aspect_ratio = aspect;
-      if(urls.length === 1){
-        inp.first_frame_url = urls[0]; // 1 ảnh: làm khung hình đầu chính xác
-      } else {
-        inp.reference_image_urls = urls; // nhiều ảnh: tham chiếu đa phương thức theo thứ tự
-        inp.prompt = prompt + '. Tham chiếu ' + urls.length + ' ảnh đính kèm theo thứ tự, giữ nhất quán nhân vật và sản phẩm trong ảnh.';
-      }
-      return createTaskFallback([{ model: 'bytedance/seedance-2-mini', input: inp }], 0);
+      var p2 = urls.length > 1
+        ? prompt + '. Tham chiếu ' + urls.length + ' ảnh đính kèm theo thứ tự, giữ nhất quán nhân vật và sản phẩm trong ảnh, khung hình đầu bám sát ảnh 1.'
+        : prompt + '. Video bám sát ảnh đính kèm, giữ nguyên nhận diện nhân vật/sản phẩm trong ảnh.';
+      var vInput = { prompt: p2, resolution: res, duration: sdDur, generate_audio: true };
+      if(aspect !== 'auto') vInput.aspect_ratio = aspect;
+      /* Theo docs.kie.ai: KHÔNG có field "image_urls". Image-to-Video (1 ảnh) và
+         Multimodal Reference-to-Video (nhiều ảnh) là 2 chế độ LOẠI TRỪ NHAU —
+         không được gửi cùng lúc first_frame_url và reference_image_urls. */
+      if(urls.length === 1) vInput.first_frame_url = urls[0];
+      else vInput.reference_image_urls = urls;
+      var refLink2 = $('vJobRefLink');
+      if(refLink2){ refLink2.setAttribute('href', urls[0]); $('vJobRefWrap').style.display = 'block'; }
+      return createTaskFallback([
+        { model: 'bytedance/seedance-2-mini', input: vInput }
+      ], 0);
     }).then(afterCreate).catch(onGenErr);
     return;
   }
@@ -1129,16 +1140,21 @@ function generateVideo(){
     var urlPromise = readyUrl ? Promise.resolve(readyUrl)
       : (updateVJob('đang tải ảnh tham chiếu lên...', 11), uploadOneRef(dataUrl));
     urlPromise.then(function(imgUrl){
-      // Grok yêu cầu prompt nhắc tới ảnh bằng @image1
+      console.log('[IDECO] ảnh tham chiếu URL:', imgUrl);
+      var refLink = $('vJobRefLink');
+      refLink.setAttribute('href', imgUrl);
+      $('vJobRefWrap').style.display = 'block';
+      updateVJob('đã có ảnh tham chiếu — đang gửi yêu cầu dựng video...', 14);
+      // Grok bắt buộc prompt phải nhắc tới ảnh bằng @image1 thì mới thực sự dùng ảnh làm tham chiếu
       var p = /@image\d/.test(prompt) ? prompt : ('@image1 ' + prompt);
       if(refs.length > 1) p += '. Ảnh tham chiếu gồm ' + refs.length + ' hình xếp theo thứ tự từ trái sang phải.';
-      var input15 = { prompt: p, image_urls: [imgUrl], aspect_ratio: aspect, resolution: res, duration: dur };
-      var inputOld = { prompt: p, image_urls: [imgUrl], mode: 'normal', duration: String(Math.min(dur, 15)),
-                       resolution: res, aspect_ratio: aspect === 'auto' ? '3:4' : aspect };
+      // duration API chỉ chấp nhận chuỗi '6' | '10' | '15' (không phải số)
+      var durStr = dur >= 15 ? '15' : (dur >= 10 ? '10' : '6');
+      var input = { image_urls: [imgUrl], prompt: p, mode: 'normal', duration: durStr, resolution: res };
+      // 'auto' không phải giá trị hợp lệ của API — bỏ hẳn trường này để Grok tự theo kích thước ảnh
+      if(aspect !== 'auto') input.aspect_ratio = aspect;
       return createTaskFallback([
-        { model: 'grok-imagine-video-1.5', input: input15 },
-        { model: 'grok-imagine/video-1.5', input: input15 },
-        { model: 'grok-imagine/image-to-video', input: inputOld }
+        { model: 'grok-imagine/image-to-video', input: input }
       ], 0);
     }).then(afterCreate).catch(onGenErr);
   });
@@ -1189,6 +1205,7 @@ function pollVideoTask(taskId, prompt){
 function showVJob(prompt, state, pct){
   $('vJob').classList.add('show');
   $('vJobPrompt').textContent = prompt;
+  $('vJobRefWrap').style.display = 'none';
   updateVJob(state, pct);
   $('vJob').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
