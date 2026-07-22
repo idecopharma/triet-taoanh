@@ -619,6 +619,10 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
       <div class="si"><b>🎬 Video tối đa / ngày</b><small>Số video được phép dựng trong 1 ngày</small></div>
       <input type="number" id="setVidLimit" min="0" max="9999" value="0">
     </div>
+    <div class="setrow" style="display:block">
+      <div class="si" style="margin-bottom:8px"><b>🍌 Tên model Nano Banana</b><small>Dán đúng slug từ kie.ai nếu tạo ảnh báo lỗi model. Để trống = tự dò.</small></div>
+      <input type="text" id="setNanoModel" placeholder="vd: google/nano-banana-2-lite" style="width:100%;border:1px solid var(--line);border-radius:11px;background:#fdfcfa;padding:11px 12px;font:inherit;font-size:14px;color:var(--ink);outline:none">
+    </div>
 
     <div class="usage">
       <div class="ur"><span>Ảnh đã tạo hôm nay</span><b id="uImg">0</b></div>
@@ -643,12 +647,29 @@ var LS_HIST    = 'taoanh_gptimage2_history';
 var LS_LIMITS  = 'ideco_daily_limits';   // {img:0, vid:0}
 var LS_USAGE   = 'ideco_daily_usage';    // {date:'YYYY-MM-DD', img:0, vid:0}
 
-/* Model tạo ảnh của Nanobanana 2 Lite trên Kie.ai */
-var NANO_MODEL_T2I = 'google/nano-banana-2-lite';               // text-to-image
-var NANO_MODEL_I2I = 'google/nano-banana-2-lite-edit';          // image-to-image (có ảnh tham chiếu)
+/* Model tạo ảnh Nano Banana 2 Lite trên Kie.ai.
+   Kie thay đổi slug theo thời điểm — thử lần lượt danh sách dưới, slug nào Kie
+   chấp nhận thì dùng. Có thể ghi đè bằng ô "Tên model" trong ⚙ Cài đặt. */
+var LS_NANO_MODEL = 'ideco_nano_model'; // slug do người dùng nhập tay (nếu có)
+var NANO_T2I_CANDIDATES = [
+  'google/nano-banana-2-lite',
+  'google/nano-banana-2-lite/text-to-image',
+  'nano-banana-2-lite',
+  'google/nano-banana-2',
+  'google/nano-banana'
+];
+var NANO_I2I_CANDIDATES = [
+  'google/nano-banana-2-lite-edit',
+  'google/nano-banana-2-lite/edit',
+  'google/nano-banana-2-lite/image-to-image',
+  'nano-banana-2-lite-edit',
+  'google/nano-banana-edit',
+  'google/nano-banana'
+];
 
 var $ = function(id){ return document.getElementById(id); };
 var busy = false;
+var imgModelLabel = 'GPT-Image-2'; // model của lần tạo ảnh hiện tại — lưu vào lịch sử
 var pollTimer = null;
 var refImages = [null, null, null]; // {dataUrl, uploadedUrl}
 var pickSlot = 0;
@@ -755,6 +776,7 @@ $('btnSettings').onclick = function(){
   var lim = loadLimits();
   $('setImgLimit').value = lim.img;
   $('setVidLimit').value = lim.vid;
+  $('setNanoModel').value = localStorage.getItem(LS_NANO_MODEL) || '';
   renderUsage();
   $('settingsModal').classList.add('on');
 };
@@ -762,8 +784,11 @@ $('btnCloseSettings').onclick = function(){ $('settingsModal').classList.remove(
 $('settingsModal').addEventListener('click', function(e){ if(e.target === this) this.classList.remove('on'); });
 $('btnSaveSettings').onclick = function(){
   saveLimits({ img: Math.max(0, +$('setImgLimit').value||0), vid: Math.max(0, +$('setVidLimit').value||0) });
+  var nm = $('setNanoModel').value.trim();
+  if(nm) localStorage.setItem(LS_NANO_MODEL, nm);
+  else   localStorage.removeItem(LS_NANO_MODEL);
   renderUsage();
-  toast('✓ Đã lưu giới hạn mỗi ngày');
+  toast('✓ Đã lưu cài đặt');
   $('settingsModal').classList.remove('on');
 };
 $('btnResetToday').onclick = function(){
@@ -1021,6 +1046,7 @@ function generate(){
   if(!prompt){ toast('Vui lòng nhập mô tả ảnh trước nhé', true); $('prompt').focus(); return; }
   if(!checkQuota('img')) return;
 
+  imgModelLabel = $('imgModel').value === 'nanobanana' ? 'Nano Banana 2 Lite' : 'GPT-Image-2';
   busy = true;
   $('btnGo').disabled = true;
   $('btnGo').textContent = 'ĐANG TẠO...';
@@ -1031,38 +1057,79 @@ function generate(){
   (hasRefs ? uploadRefs() : Promise.resolve([]))
     .then(function(urls){
       var useNano = $('imgModel').value === 'nanobanana';
-      var input = {
-        prompt: prompt,
-        aspect_ratio: $('aspect').value
-      };
-      var model;
+      var promptNow = $('prompt').value.trim();
+
       if(useNano){
-        /* Nanobanana 2 Lite — không dùng field resolution 4K của GPT-Image-2 */
-        if(urls.length){ model = NANO_MODEL_I2I; input.image_urls = urls; }
-        else            { model = NANO_MODEL_T2I; }
-      } else {
-        input.resolution = $('resolution').value;
-        if(urls.length){ model = 'gpt-image-2-image-to-image'; input.input_urls = urls; }
-        else            { model = 'gpt-image-2-text-to-image'; }
+        /* Nano Banana 2 Lite — thử lần lượt các slug cho tới khi Kie chấp nhận.
+           Không dùng field resolution 4K (đó là của GPT-Image-2). */
+        var custom = (localStorage.getItem(LS_NANO_MODEL) || '').trim();
+        var candidates = urls.length ? NANO_I2I_CANDIDATES.slice() : NANO_T2I_CANDIDATES.slice();
+        if(custom) candidates.unshift(custom); // ưu tiên slug người dùng nhập tay
+
+        var input = { prompt: prompt, aspect_ratio: $('aspect').value };
+        if(urls.length) input.image_urls = urls;
+
+        updateJob('đang gửi yêu cầu tạo ảnh...', 16);
+        return createImageTaskFallback(candidates, 0, input, promptNow);
       }
+
+      /* GPT-Image-2 */
+      var gInput = { prompt: prompt, aspect_ratio: $('aspect').value, resolution: $('resolution').value };
+      var gModel = 'gpt-image-2-text-to-image';
+      if(urls.length){ gModel = 'gpt-image-2-image-to-image'; gInput.input_urls = urls; }
       updateJob('đang gửi yêu cầu tạo ảnh...', 16);
       return fetch(API_BASE + '/api/v1/jobs/createTask', {
         method: 'POST',
         headers: headers(),
-        body: JSON.stringify({ model: model, input: input })
-      }).then(function(r){ return r.json(); });
-    })
-    .then(function(d){
-      if(d.code === 401) throw new Error('API key không hợp lệ hoặc hết hạn (401)');
-      if(d.code === 402) throw new Error('Tài khoản hết credits — nạp thêm trên kie.ai nhé (402)');
-      if(d.code !== 200 || !d.data || !d.data.taskId)
-        throw new Error(d.msg || ('Lỗi tạo tác vụ (mã ' + d.code + ')'));
-      pollTask(d.data.taskId, $('prompt').value.trim());
+        body: JSON.stringify({ model: gModel, input: gInput })
+      }).then(function(r){ return r.json(); })
+        .then(function(d){ handleCreateResp(d, promptNow); });
     })
     .catch(function(e){
       failJob(e.message === 'Failed to fetch'
         ? 'Không kết nối được máy chủ — kiểm tra mạng thử lại nhé'
         : e.message);
+    });
+}
+
+/* Xử lý phản hồi createTask chung */
+function handleCreateResp(d, promptNow){
+  if(d.code === 401) throw new Error('API key không hợp lệ hoặc hết hạn (401)');
+  if(d.code === 402) throw new Error('Tài khoản hết credits — nạp thêm trên kie.ai nhé (402)');
+  if(d.code !== 200 || !d.data || !d.data.taskId)
+    throw new Error(d.msg || ('Lỗi tạo tác vụ (mã ' + d.code + ')'));
+  pollTask(d.data.taskId, promptNow);
+}
+
+/* Thử lần lượt danh sách slug Nano Banana. Slug nào Kie báo "model không hỗ trợ"
+   (code 400/404/422) thì thử slug kế tiếp; lỗi 401/402 thì dừng ngay. */
+function createImageTaskFallback(models, i, input, promptNow){
+  var m = models[i];
+  console.log('[IDECO nano createTask] thử model=' + m, input);
+  return fetch(API_BASE + '/api/v1/jobs/createTask', {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify({ model: m, input: input })
+  }).then(function(r){ return r.json(); })
+    .then(function(d){
+      console.log('[IDECO nano createTask] phản hồi', m, d);
+      if(d.code === 401) throw new Error('API key không hợp lệ hoặc hết hạn (401)');
+      if(d.code === 402) throw new Error('Tài khoản hết credits — nạp thêm trên kie.ai nhé (402)');
+
+      if(d.code === 200 && d.data && d.data.taskId){
+        /* Thành công → nhớ slug này để lần sau dùng luôn, không thử lại từ đầu */
+        localStorage.setItem(LS_NANO_MODEL, m);
+        pollTask(d.data.taskId, promptNow);
+        return;
+      }
+      /* Slug không hợp lệ → thử slug kế tiếp nếu còn */
+      if(i + 1 < models.length){
+        updateJob('thử mô hình khác (' + (i + 2) + '/' + models.length + ')...', 16);
+        return createImageTaskFallback(models, i + 1, input, promptNow);
+      }
+      throw new Error('Không có slug Nano Banana nào được Kie chấp nhận. '
+        + 'Vào ⚙ Cài đặt → nhập đúng "Tên model Nano Banana" từ kie.ai. '
+        + '(lỗi cuối: ' + (d.msg || ('mã ' + d.code)) + ')');
     });
 }
 
@@ -1120,7 +1187,7 @@ function finishJob(urls, prompt, credits){
   resetBtn();
   var now = Date.now();
   var hist = loadHist();
-  urls.forEach(function(u){ hist.unshift({ url: u, prompt: prompt, t: now }); });
+  urls.forEach(function(u){ hist.unshift({ url: u, prompt: prompt, t: now, model: imgModelLabel }); });
   saveHist(hist);
   renderGallery();
   bumpUsage('img', 1);
@@ -1159,7 +1226,7 @@ function renderGallery(){
     var time = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     card.innerHTML =
       '<img loading="lazy" alt="Ảnh AI">' +
-      '<div class="meta"><div class="p"></div><span class="mono">' + time + ' · ' + (item.engine === 'seedance' ? 'Seedance 2.0 Mini' : 'Grok 1.5') + '</span></div>' +
+      '<div class="meta"><div class="p"></div><span class="mono">' + time + ' · ' + (item.model || 'GPT-Image-2') + '</span></div>' +
       '<div class="acts">' +
         '<button data-act="dl">⬇ Tải</button>' +
         '<button data-act="re">↻ Tạo lại</button>' +
