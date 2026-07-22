@@ -78,6 +78,44 @@ textarea:focus{border-color:var(--red)}
 .ref-hint{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.45}
 #fileInput{display:none}
 
+/* ===== ACTION SHEET CHỌN NGUỒN ẢNH ===== */
+.picker{position:fixed;inset:0;z-index:70;background:rgba(20,20,24,.5);display:none;align-items:flex-end;justify-content:center}
+.picker.on{display:flex}
+.picker .psheet{width:100%;max-width:680px;padding:0 12px calc(12px + env(safe-area-inset-bottom));animation:sheetUp .24s cubic-bezier(.2,.8,.25,1)}
+.picker .grp{background:var(--card);border-radius:16px;overflow:hidden;margin-bottom:9px}
+.picker .grp button{width:100%;border:0;background:transparent;padding:16px;font:inherit;font-size:16px;
+  color:var(--ink);display:flex;align-items:center;gap:12px;text-align:left}
+.picker .grp button+button{border-top:1px solid var(--line)}
+.picker .grp button:active{background:var(--bg)}
+.picker .grp button .ic{font-size:20px;width:24px;text-align:center}
+.picker .cancel{width:100%;border:0;background:var(--card);border-radius:16px;padding:16px;font:inherit;
+  font-size:16px;font-weight:700;color:var(--red)}
+.picker .cancel:active{background:var(--bg)}
+
+/* ===== CAMERA TRỰC TIẾP ===== */
+#camScreen{position:fixed;inset:0;z-index:90;background:#000;display:none;flex-direction:column}
+#camScreen.on{display:flex}
+#camVideo{flex:1;width:100%;object-fit:cover;background:#000}
+#camVideo.mirror{transform:scaleX(-1)}
+.cam-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;
+  padding:calc(14px + env(safe-area-inset-top)) 18px 14px;background:linear-gradient(rgba(0,0,0,.5),transparent);z-index:2}
+.cam-top button{border:0;background:rgba(0,0,0,.4);color:#fff;width:42px;height:42px;border-radius:50%;font-size:18px;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.cam-top .lbl2{color:#fff;font-size:13px;font-weight:600;background:rgba(0,0,0,.4);padding:8px 14px;border-radius:999px;backdrop-filter:blur(6px)}
+.cam-bottom{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:40px;
+  padding:24px 24px calc(32px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.55));z-index:2}
+.cam-shoot{width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:rgba(255,255,255,.25);transition:.12s}
+.cam-shoot:active{transform:scale(.9);background:rgba(255,255,255,.5)}
+.cam-flip{width:52px;height:52px;border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:22px;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.cam-flip:active{background:rgba(255,255,255,.35)}
+.cam-spacer{width:52px}
+#camErr{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;color:#fff;text-align:center;padding:30px;z-index:3}
+#camErr.on{display:flex}
+#camErr p{font-size:14px;line-height:1.5;color:#cfcac1;max-width:300px}
+#camErr button{border:1px solid #fff;background:transparent;color:#fff;border-radius:12px;padding:12px 22px;font:inherit;font-size:14px;font-weight:600}
+
 /* NÚT CÀI ĐẶT ⚙ TRÊN HEADER */
 .cog{width:38px;height:38px;flex:none;border-radius:12px;border:1px solid var(--line);
   background:var(--card);color:var(--muted);font-size:17px;display:flex;align-items:center;justify-content:center;transition:.15s}
@@ -533,6 +571,37 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
   </div>
 </div>
 
+<!-- ===== ACTION SHEET CHỌN NGUỒN ẢNH ===== -->
+<div class="picker" id="srcPicker">
+  <div class="psheet">
+    <div class="grp">
+      <button id="srcCamera"><span class="ic">📷</span> Chụp ảnh bằng camera</button>
+      <button id="srcGallery"><span class="ic">🖼️</span> Chọn từ thư viện</button>
+    </div>
+    <button class="cancel" id="srcCancel">Hủy</button>
+  </div>
+</div>
+
+<!-- ===== MÀN HÌNH CAMERA TRỰC TIẾP ===== -->
+<div id="camScreen">
+  <video id="camVideo" autoplay playsinline muted></video>
+  <div class="cam-top">
+    <button id="camClose" title="Đóng">✕</button>
+    <span class="lbl2" id="camLabel">Camera sau</span>
+    <div style="width:42px"></div>
+  </div>
+  <div class="cam-bottom">
+    <div class="cam-spacer"></div>
+    <button class="cam-shoot" id="camShoot" title="Chụp"></button>
+    <button class="cam-flip" id="camFlip" title="Đổi camera">🔄</button>
+  </div>
+  <div id="camErr">
+    <div style="font-size:34px">🚫</div>
+    <p id="camErrMsg">Không mở được camera. Vui lòng cho phép quyền truy cập camera trong trình duyệt.</p>
+    <button id="camErrClose">Đóng</button>
+  </div>
+</div>
+
 <!-- ===== MODAL CÀI ĐẶT GIỚI HẠN ===== -->
 <div class="modal" id="settingsModal">
   <div class="sheet">
@@ -730,20 +799,14 @@ Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(
       return;
     }
     pickSlot = i;
-    $('fileInput').value = '';
-    $('fileInput').click();
+    openImageSource(function(dataUrl){
+      refImages[pickSlot] = { dataUrl: dataUrl, uploadedUrl: null };
+      renderSlots();
+    });
   });
 });
 
-$('fileInput').addEventListener('change', function(){
-  var file = this.files && this.files[0];
-  if(!file) return;
-  compressImage(file, 1600, 0.86, function(dataUrl){
-    if(!dataUrl){ toast('Không đọc được ảnh này', true); return; }
-    refImages[pickSlot] = { dataUrl: dataUrl, uploadedUrl: null };
-    renderSlots();
-  });
-});
+/* (handler #fileInput cũ đã thay bằng module openImageSource) */
 
 function compressImage(file, maxSide, quality, cb){
   var reader = new FileReader();
@@ -766,6 +829,144 @@ function compressImage(file, maxSide, quality, cb){
   reader.onerror = function(){ cb(null); };
   reader.readAsDataURL(file);
 }
+
+/* ============================================================
+   MODULE CHỌN NGUỒN ẢNH + CAMERA TRỰC TIẾP (dùng chung ảnh & video)
+   ============================================================ */
+var _srcCb = null;              // callback nhận dataUrl ảnh đã nén
+var camStream = null;           // MediaStream đang chạy
+var camFacing = 'environment';  // 'environment' = sau, 'user' = trước
+
+/* Mở action-sheet chọn nguồn. cb nhận dataUrl (đã nén qua compressImage). */
+function openImageSource(cb){
+  _srcCb = cb;
+  $('srcPicker').classList.add('on');
+}
+function closeSrcPicker(){ $('srcPicker').classList.remove('on'); }
+
+$('srcCancel').onclick = closeSrcPicker;
+$('srcPicker').addEventListener('click', function(e){ if(e.target === this) closeSrcPicker(); });
+
+/* --- Chọn từ thư viện: dùng lại #fileInput ẩn --- */
+$('srcGallery').onclick = function(){
+  closeSrcPicker();
+  var inp = $('fileInput');
+  inp.value = '';
+  inp.removeAttribute('capture'); // đảm bảo mở thư viện, không ép camera
+  inp.onchange = function(){
+    var file = inp.files && inp.files[0];
+    inp.onchange = null;
+    if(!file) return;
+    compressImage(file, 1600, 0.86, function(dataUrl){
+      if(!dataUrl){ toast('Không đọc được ảnh này', true); return; }
+      if(_srcCb) _srcCb(dataUrl);
+    });
+  };
+  inp.click();
+};
+
+/* --- Chụp ảnh: ưu tiên camera trực tiếp (getUserMedia), fallback capture gốc --- */
+$('srcCamera').onclick = function(){
+  closeSrcPicker();
+  var hasGUM = navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.isSecureContext;
+  if(hasGUM){
+    openCamera();
+  } else {
+    /* Fallback: input capture — hệ điều hành tự mở app camera */
+    var inp = $('fileInput');
+    inp.value = '';
+    inp.setAttribute('capture', 'environment');
+    inp.onchange = function(){
+      var file = inp.files && inp.files[0];
+      inp.onchange = null;
+      inp.removeAttribute('capture');
+      if(!file) return;
+      compressImage(file, 1600, 0.86, function(dataUrl){
+        if(!dataUrl){ toast('Không đọc được ảnh này', true); return; }
+        if(_srcCb) _srcCb(dataUrl);
+      });
+    };
+    inp.click();
+  }
+};
+
+/* --- Camera trực tiếp trong app --- */
+function openCamera(){
+  $('camScreen').classList.add('on');
+  $('camErr').classList.remove('on');
+  startCamStream();
+}
+function startCamStream(){
+  stopCamStream();
+  var constraints = { video: { facingMode: { ideal: camFacing }, width:{ideal:1920}, height:{ideal:1920} }, audio:false };
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(stream){
+      camStream = stream;
+      var v = $('camVideo');
+      v.srcObject = stream;
+      v.classList.toggle('mirror', camFacing === 'user'); // lật gương camera trước cho tự nhiên
+      $('camLabel').textContent = camFacing === 'user' ? 'Camera trước' : 'Camera sau';
+    })
+    .catch(function(err){
+      /* Thử lại không ép facingMode (một số máy chỉ có 1 cam) */
+      if(camStream === null && constraints.video.facingMode){
+        navigator.mediaDevices.getUserMedia({ video:true, audio:false })
+          .then(function(stream){
+            camStream = stream;
+            var v = $('camVideo'); v.srcObject = stream;
+            v.classList.remove('mirror');
+            $('camLabel').textContent = 'Camera';
+          })
+          .catch(function(e2){ showCamErr(e2); });
+      } else {
+        showCamErr(err);
+      }
+    });
+}
+function showCamErr(err){
+  var msg = 'Không mở được camera. Vui lòng cho phép quyền truy cập camera trong trình duyệt rồi thử lại.';
+  if(err && (err.name === 'NotAllowedError' || err.name === 'SecurityError'))
+    msg = 'Bạn đã từ chối quyền camera. Vào cài đặt trình duyệt cho phép camera cho trang này rồi thử lại.';
+  else if(err && err.name === 'NotFoundError')
+    msg = 'Không tìm thấy camera trên thiết bị này.';
+  $('camErrMsg').textContent = msg;
+  $('camErr').classList.add('on');
+}
+function stopCamStream(){
+  if(camStream){ camStream.getTracks().forEach(function(t){ t.stop(); }); camStream = null; }
+  var v = $('camVideo'); if(v) v.srcObject = null;
+}
+function closeCamera(){
+  stopCamStream();
+  $('camScreen').classList.remove('on');
+}
+
+$('camClose').onclick = closeCamera;
+$('camErrClose').onclick = closeCamera;
+
+/* Đổi camera trước / sau */
+$('camFlip').onclick = function(){
+  camFacing = (camFacing === 'user') ? 'environment' : 'user';
+  startCamStream();
+};
+
+/* Bấm chụp → lấy khung hình hiện tại → nén → trả về slot */
+$('camShoot').onclick = function(){
+  var v = $('camVideo');
+  if(!camStream || !v.videoWidth){ toast('Camera chưa sẵn sàng, đợi chút nhé', true); return; }
+  var w = v.videoWidth, h = v.videoHeight;
+  var maxSide = 1600, k = Math.max(w, h) > maxSide ? maxSide / Math.max(w, h) : 1;
+  var cw = Math.round(w * k), ch = Math.round(h * k);
+  var cv = document.createElement('canvas');
+  cv.width = cw; cv.height = ch;
+  var ctx = cv.getContext('2d');
+  if(camFacing === 'user'){ ctx.translate(cw, 0); ctx.scale(-1, 1); } // bỏ hiệu ứng gương khi lưu
+  ctx.drawImage(v, 0, 0, cw, ch);
+  var dataUrl = cv.toDataURL('image/jpeg', 0.86);
+  closeCamera();
+  if(_srcCb) _srcCb(dataUrl);
+  toast('✓ Đã chụp — ảnh đã thêm vào slot');
+};
 
 function renderSlots(){
   Array.prototype.forEach.call(document.querySelectorAll('#refs .slot'), function(slot){
@@ -1074,19 +1275,13 @@ Array.prototype.forEach.call(document.querySelectorAll('#vRefs .slot'), function
       return;
     }
     vPickSlot = i;
-    $('vFileInput').value = '';
-    $('vFileInput').click();
+    openImageSource(function(dataUrl){
+      vRefs[vPickSlot] = { dataUrl: dataUrl, uploadedUrl: null };
+      renderVSlots();
+    });
   });
 });
-$('vFileInput').addEventListener('change', function(){
-  var file = this.files && this.files[0];
-  if(!file) return;
-  compressImage(file, 1600, 0.86, function(dataUrl){
-    if(!dataUrl){ toast('Không đọc được ảnh này', true); return; }
-    vRefs[vPickSlot] = { dataUrl: dataUrl, uploadedUrl: null };
-    renderVSlots();
-  });
-});
+/* (handler #vFileInput cũ đã thay bằng module openImageSource) */
 function renderVSlots(){
   Array.prototype.forEach.call(document.querySelectorAll('#vRefs .slot'), function(slot){
     var i = Number(slot.getAttribute('data-i'));
