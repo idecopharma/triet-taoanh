@@ -78,6 +78,41 @@ textarea:focus{border-color:var(--red)}
 .ref-hint{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.45}
 #fileInput{display:none}
 
+/* NÚT CÀI ĐẶT ⚙ TRÊN HEADER */
+.cog{width:38px;height:38px;flex:none;border-radius:12px;border:1px solid var(--line);
+  background:var(--card);color:var(--muted);font-size:17px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.cog:active{border-color:var(--red);color:var(--red)}
+
+/* MODAL CÀI ĐẶT */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(20,20,24,.55);
+  display:none;align-items:flex-end;justify-content:center;padding:0}
+.modal.on{display:flex}
+.modal .sheet{width:100%;max-width:680px;background:var(--card);border-radius:22px 22px 0 0;
+  padding:20px 18px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18);
+  max-height:90vh;overflow:auto;animation:sheetUp .28s cubic-bezier(.2,.8,.25,1)}
+@keyframes sheetUp{from{transform:translateY(30px);opacity:.4}to{transform:translateY(0);opacity:1}}
+.modal .mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.modal .mhead b{font-size:17px;font-weight:800}
+.modal .mhead .close{width:32px;height:32px;border:0;border-radius:50%;background:var(--bg);color:var(--muted);font-size:16px}
+.modal .mdesc{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+.setrow .si{flex:1}
+.setrow .si b{font-size:14px;font-weight:600;display:block}
+.setrow .si small{font-size:11.5px;color:var(--muted);display:block;margin-top:2px}
+.setrow input[type=number]{width:96px;border:1px solid var(--line);border-radius:11px;background:#fdfcfa;
+  padding:11px 12px;font:inherit;font-size:15px;text-align:center;color:var(--ink);outline:none}
+.setrow input[type=number]:focus{border-color:var(--red)}
+.usage{background:var(--bg);border-radius:14px;padding:13px 14px;margin-top:16px}
+.usage .ur{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin:6px 0}
+.usage .ur b{font-weight:600}
+.usage .ur .warn{color:var(--warn)}
+.usage .ur .full{color:var(--red);font-weight:700}
+.mbtn{width:100%;margin-top:18px;border:0;border-radius:14px;background:var(--red);color:#fff;
+  font-size:15px;font-weight:800;padding:14px 0;transition:.15s}
+.mbtn:active{background:var(--red-dark)}
+.mreset{width:100%;margin-top:9px;border:1px solid var(--line);border-radius:14px;background:transparent;
+  color:var(--muted);font-size:13px;font-weight:600;padding:11px 0}
+
 /* TÙY CHỌN */
 .optrow{display:flex;gap:9px}
 .optrow>div{flex:1}
@@ -237,8 +272,9 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
 <div id="app">
   <header>
     <img src="https://cdn.imgpile.com/f/kDdE9bx_xl.png" alt="" onerror="this.style.display='none'">
-    <div class="t"><b>Studio Tạo Ảnh <span>AI</span></b><small>GPT-Image-2 + Grok Imagine · Kie.ai</small></div>
+    <div class="t"><b>Studio Tạo Ảnh <span>AI</span></b><small>Nanobanana 2 Lite + GPT-Image-2 · Kie.ai</small></div>
     <button class="credit" id="btnCredit"><span class="dot" id="cdot"></span><b id="creditVal">—</b>&nbsp;credits</button>
+    <button class="cog" id="btnSettings" title="Cài đặt giới hạn">⚙</button>
   </header>
 
   <div class="tabs">
@@ -247,6 +283,15 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
   </div>
 
   <div id="tabImg">
+
+  <div class="sec">
+    <label class="lbl">Mô hình tạo ảnh</label>
+    <select id="imgModel">
+      <option value="nanobanana">🍌 Nanobanana 2 Lite · nhanh &amp; tiết kiệm credit</option>
+      <option value="gptimage2">✨ GPT-Image-2 · chi tiết, hỗ trợ 4K</option>
+    </select>
+    <div class="ref-hint" id="modelHint">Nanobanana 2 Lite: tạo ảnh nhanh, chi phí thấp, phù hợp làm nhiều ảnh mỗi ngày.</div>
+  </div>
 
   <div class="sec">
     <label class="lbl">Mô tả ảnh cần tạo</label>
@@ -488,6 +533,34 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
   </div>
 </div>
 
+<!-- ===== MODAL CÀI ĐẶT GIỚI HẠN ===== -->
+<div class="modal" id="settingsModal">
+  <div class="sheet">
+    <div class="mhead">
+      <b>⚙ Cài đặt kiểm soát credit</b>
+      <button class="close" id="btnCloseSettings">✕</button>
+    </div>
+    <p class="mdesc">Đặt số lượng tối đa mỗi ngày để tránh vượt credit. Bộ đếm tự động reset vào 0h mỗi ngày. Đặt <b>0</b> nghĩa là không giới hạn.</p>
+
+    <div class="setrow">
+      <div class="si"><b>🖼 Ảnh tối đa / ngày</b><small>Số ảnh được phép tạo trong 1 ngày</small></div>
+      <input type="number" id="setImgLimit" min="0" max="9999" value="0">
+    </div>
+    <div class="setrow">
+      <div class="si"><b>🎬 Video tối đa / ngày</b><small>Số video được phép dựng trong 1 ngày</small></div>
+      <input type="number" id="setVidLimit" min="0" max="9999" value="0">
+    </div>
+
+    <div class="usage">
+      <div class="ur"><span>Ảnh đã tạo hôm nay</span><b id="uImg">0</b></div>
+      <div class="ur"><span>Video đã dựng hôm nay</span><b id="uVid">0</b></div>
+    </div>
+
+    <button class="mbtn" id="btnSaveSettings">LƯU CÀI ĐẶT</button>
+    <button class="mreset" id="btnResetToday">Đặt lại bộ đếm hôm nay về 0</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -498,6 +571,12 @@ var UPLOAD_URL = 'https://kieai.redpandaai.co/api/file-base64-upload';
 var API_KEY    = '3fb45067e29a8aabb5e6f182b9d7b8e4'; // key nội bộ — không chia sẻ file ra ngoài
 var PASSWORD   = 'minhtriet1973';
 var LS_HIST    = 'taoanh_gptimage2_history';
+var LS_LIMITS  = 'ideco_daily_limits';   // {img:0, vid:0}
+var LS_USAGE   = 'ideco_daily_usage';    // {date:'YYYY-MM-DD', img:0, vid:0}
+
+/* Model tạo ảnh của Nanobanana 2 Lite trên Kie.ai */
+var NANO_MODEL_T2I = 'google/nano-banana-2-lite';               // text-to-image
+var NANO_MODEL_I2I = 'google/nano-banana-2-lite-edit';          // image-to-image (có ảnh tham chiếu)
 
 var $ = function(id){ return document.getElementById(id); };
 var busy = false;
@@ -558,6 +637,78 @@ function refreshCredits(){
       $('cdot').className = 'dot bad';
     });
 }
+
+/* ================= GIỚI HẠN / QUOTA MỖI NGÀY ================= */
+function todayStr(){
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function loadLimits(){
+  try{ var l = JSON.parse(localStorage.getItem(LS_LIMITS)||'{}'); return { img: +l.img||0, vid: +l.vid||0 }; }
+  catch(_){ return { img:0, vid:0 }; }
+}
+function saveLimits(l){ localStorage.setItem(LS_LIMITS, JSON.stringify(l)); }
+function loadUsage(){
+  var u;
+  try{ u = JSON.parse(localStorage.getItem(LS_USAGE)||'{}'); }catch(_){ u = {}; }
+  if(u.date !== todayStr()){ u = { date: todayStr(), img:0, vid:0 }; localStorage.setItem(LS_USAGE, JSON.stringify(u)); }
+  u.img = +u.img||0; u.vid = +u.vid||0;
+  return u;
+}
+function saveUsage(u){ u.date = todayStr(); localStorage.setItem(LS_USAGE, JSON.stringify(u)); }
+function bumpUsage(kind, n){ var u = loadUsage(); u[kind] = (+u[kind]||0) + (n||1); saveUsage(u); renderUsage(); }
+
+/* Kiểm tra trước khi tạo. type: 'img' | 'vid'. Trả về true nếu ĐƯỢC PHÉP */
+function checkQuota(type){
+  var lim = loadLimits(), u = loadUsage();
+  var limit = lim[type], used = u[type];
+  if(limit > 0 && used >= limit){
+    toast((type==='img'?'🖼 Ảnh':'🎬 Video') + ': đã đạt giới hạn ' + limit + '/ngày. Vào ⚙ Cài đặt để chỉnh hoặc chờ sang ngày mai.', true);
+    return false;
+  }
+  return true;
+}
+
+/* Cập nhật hiển thị usage trong modal */
+function renderUsage(){
+  var lim = loadLimits(), u = loadUsage();
+  var f = function(id, used, limit){
+    var el = $(id); if(!el) return;
+    el.textContent = limit > 0 ? (used + ' / ' + limit) : (used + ' (không giới hạn)');
+    el.className = limit > 0 && used >= limit ? 'full' : (limit > 0 && used >= limit-1 ? 'warn' : '');
+  };
+  f('uImg', u.img, lim.img);
+  f('uVid', u.vid, lim.vid);
+}
+
+/* Mở / đóng modal cài đặt */
+$('btnSettings').onclick = function(){
+  var lim = loadLimits();
+  $('setImgLimit').value = lim.img;
+  $('setVidLimit').value = lim.vid;
+  renderUsage();
+  $('settingsModal').classList.add('on');
+};
+$('btnCloseSettings').onclick = function(){ $('settingsModal').classList.remove('on'); };
+$('settingsModal').addEventListener('click', function(e){ if(e.target === this) this.classList.remove('on'); });
+$('btnSaveSettings').onclick = function(){
+  saveLimits({ img: Math.max(0, +$('setImgLimit').value||0), vid: Math.max(0, +$('setVidLimit').value||0) });
+  renderUsage();
+  toast('✓ Đã lưu giới hạn mỗi ngày');
+  $('settingsModal').classList.remove('on');
+};
+$('btnResetToday').onclick = function(){
+  saveUsage({ date: todayStr(), img:0, vid:0 });
+  renderUsage();
+  toast('Đã đặt lại bộ đếm hôm nay về 0');
+};
+
+/* Đổi mô tả gợi ý theo model tạo ảnh */
+$('imgModel').onchange = function(){
+  $('modelHint').textContent = this.value === 'nanobanana'
+    ? 'Nanobanana 2 Lite: tạo ảnh nhanh, chi phí thấp, phù hợp làm nhiều ảnh mỗi ngày.'
+    : 'GPT-Image-2: chi tiết cao, hỗ trợ tới 4K in ấn — tốn nhiều credit hơn.';
+};
 
 /* ================= CHIP GỢI Ý ================= */
 Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(c){
@@ -667,6 +818,7 @@ function generate(){
   if(busy) return;
   var prompt = $('prompt').value.trim();
   if(!prompt){ toast('Vui lòng nhập mô tả ảnh trước nhé', true); $('prompt').focus(); return; }
+  if(!checkQuota('img')) return;
 
   busy = true;
   $('btnGo').disabled = true;
@@ -677,15 +829,20 @@ function generate(){
 
   (hasRefs ? uploadRefs() : Promise.resolve([]))
     .then(function(urls){
+      var useNano = $('imgModel').value === 'nanobanana';
       var input = {
         prompt: prompt,
-        aspect_ratio: $('aspect').value,
-        resolution: $('resolution').value
+        aspect_ratio: $('aspect').value
       };
-      var model = 'gpt-image-2-text-to-image';
-      if(urls.length){
-        model = 'gpt-image-2-image-to-image';
-        input.input_urls = urls;
+      var model;
+      if(useNano){
+        /* Nanobanana 2 Lite — không dùng field resolution 4K của GPT-Image-2 */
+        if(urls.length){ model = NANO_MODEL_I2I; input.image_urls = urls; }
+        else            { model = NANO_MODEL_T2I; }
+      } else {
+        input.resolution = $('resolution').value;
+        if(urls.length){ model = 'gpt-image-2-image-to-image'; input.input_urls = urls; }
+        else            { model = 'gpt-image-2-text-to-image'; }
       }
       updateJob('đang gửi yêu cầu tạo ảnh...', 16);
       return fetch(API_BASE + '/api/v1/jobs/createTask', {
@@ -765,6 +922,7 @@ function finishJob(urls, prompt, credits){
   urls.forEach(function(u){ hist.unshift({ url: u, prompt: prompt, t: now }); });
   saveHist(hist);
   renderGallery();
+  bumpUsage('img', 1);
   toast('Xong ' + urls.length + ' ảnh' + (credits ? ' · tốn ' + credits + ' credits' : '') + ' — nhớ tải về, link hết hạn sau 24h!');
   refreshCredits();
 }
@@ -1061,6 +1219,7 @@ function generateVideo(){
   if(vBusy) return;
   var prompt = $('vPrompt').value.trim();
   if(!prompt){ toast('Vui lòng nhập mô tả video trước nhé', true); $('vPrompt').focus(); return; }
+  if(!checkQuota('vid')) return;
   var refs = vRefs.filter(function(r){ return r; });
 
   vBusy = true;
@@ -1236,6 +1395,7 @@ function finishVJob(urls, prompt, credits, taskId){
   }
   var was30 = vChain && vChain.stage === 2;
   vChain = null;
+  bumpUsage('vid', 1);
   toast(was30
     ? '🎉 Hoàn tất video 30s nối liền — nhớ tải về, link hết hạn sau 24h!'
     : 'Xong video' + (credits ? ' · tốn ' + credits + ' credits' : '') + ' — nhớ tải về, link hết hạn sau 24h!');
