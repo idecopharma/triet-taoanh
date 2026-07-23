@@ -34,6 +34,10 @@ button{font:inherit;cursor:pointer}
   font-size:16px;font-weight:800;padding:15px 0;transition:.15s}
 #lock button:active{background:var(--red-dark)}
 #lockErr{color:#ff7a66;font-size:13px;margin-top:12px;min-height:18px}
+#rememberWrap{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:14px;
+  color:#8a857d;font-size:13.5px;user-select:none;cursor:pointer}
+#rememberWrap input{width:19px;height:19px;flex:0 0 19px;margin:0;padding:0;accent-color:var(--red);cursor:pointer}
+#rememberWrap span{line-height:1.3}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 .shake{animation:shake .4s}
 
@@ -301,6 +305,10 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
     <h1>Studio Tạo Ảnh <span>AI</span></h1>
     <p>Ứng dụng nội bộ IDECO — nhập mật khẩu để tiếp tục</p>
     <input type="password" id="pw" placeholder="••••••••" autocomplete="off" inputmode="text">
+    <label id="rememberWrap" for="rememberMe">
+      <input type="checkbox" id="rememberMe" checked>
+      <span>Ghi nhớ đăng nhập trên máy này</span>
+    </label>
     <button id="btnUnlock">MỞ KHÓA</button>
     <div id="lockErr"></div>
   </div>
@@ -631,6 +639,7 @@ select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fd
 
     <button class="mbtn" id="btnSaveSettings">LƯU CÀI ĐẶT</button>
     <button class="mreset" id="btnResetToday">Đặt lại bộ đếm hôm nay về 0</button>
+    <button class="mreset" id="btnLogout" style="color:#ff7a66">🔒 Đăng xuất (quên mật khẩu đã ghi nhớ)</button>
   </div>
 </div>
 
@@ -671,17 +680,34 @@ var $ = function(id){ return document.getElementById(id); };
 var busy = false;
 var imgModelLabel = 'GPT-Image-2'; // model của lần tạo ảnh hiện tại — lưu vào lịch sử
 var pollTimer = null;
+var jobToken = 0;          // tăng mỗi lần bắt đầu tạo ảnh — vô hiệu hoá mọi vòng poll cũ
+var seenTaskIds = {};      // chống ghi trùng 1 taskId vào thư viện
 var refImages = [null, null, null]; // {dataUrl, uploadedUrl}
 var pickSlot = 0;
 var lbUrl = '';
 
 /* ================= MẬT KHẨU ================= */
+var LS_REMEMBER = 'taoanh_remember';
+
+function openApp(){
+  $('lock').style.display = 'none';
+  $('app').classList.add('on');
+}
+
 function unlock(){
   var v = $('pw').value;
   if(v === PASSWORD){
     sessionStorage.setItem('taoanh_unlocked', '1');
-    $('lock').style.display = 'none';
-    $('app').classList.add('on');
+    /* Ghi nhớ trên máy này → lần sau mở là vào thẳng, không hỏi lại */
+    if($('rememberMe').checked){
+      localStorage.setItem(LS_REMEMBER, '1');
+      localStorage.removeItem('taoanh_logged_out');
+    } else {
+      localStorage.removeItem(LS_REMEMBER);
+      localStorage.setItem('taoanh_logged_out', '1');
+    }
+    $('pw').value = '';
+    openApp();
     refreshCredits();
   } else {
     $('lockErr').textContent = 'Sai mật khẩu, thử lại nhé';
@@ -693,9 +719,26 @@ function unlock(){
 }
 $('btnUnlock').onclick = unlock;
 $('pw').addEventListener('keydown', function(e){ if(e.key === 'Enter') unlock(); });
-if(sessionStorage.getItem('taoanh_unlocked') === '1'){
-  $('lock').style.display = 'none';
-  $('app').classList.add('on');
+
+/* Đăng xuất — xoá ghi nhớ, quay lại màn hình khoá */
+function logout(){
+  localStorage.removeItem(LS_REMEMBER);
+  localStorage.setItem('taoanh_logged_out', '1');
+  sessionStorage.removeItem('taoanh_unlocked');
+  $('app').classList.remove('on');
+  $('lock').style.display = 'flex';
+  $('lockErr').textContent = '';
+  $('pw').value = '';
+  $('rememberMe').checked = false;
+}
+
+/* Khôi phục trạng thái: localStorage (ghi nhớ lâu dài) hoặc sessionStorage (phiên hiện tại) */
+var remembered = localStorage.getItem(LS_REMEMBER) === '1';
+/* Lần đầu vào máy: mặc định bật sẵn ô ghi nhớ. Nếu đã từng đăng xuất thì để tắt. */
+$('rememberMe').checked = remembered || localStorage.getItem('taoanh_logged_out') !== '1';
+if(remembered || sessionStorage.getItem('taoanh_unlocked') === '1'){
+  sessionStorage.setItem('taoanh_unlocked', '1');
+  openApp();
 }
 
 /* ================= TIỆN ÍCH ================= */
@@ -795,6 +838,12 @@ $('btnResetToday').onclick = function(){
   saveUsage({ date: todayStr(), img:0, vid:0 });
   renderUsage();
   toast('Đã đặt lại bộ đếm hôm nay về 0');
+};
+
+$('btnLogout').onclick = function(){
+  if(!confirm('Đăng xuất và xoá mật khẩu đã ghi nhớ trên máy này?')) return;
+  $('settingsModal').classList.remove('on');
+  logout();
 };
 
 /* Đổi mô tả gợi ý theo model tạo ảnh */
@@ -1046,6 +1095,11 @@ function generate(){
   if(!prompt){ toast('Vui lòng nhập mô tả ảnh trước nhé', true); $('prompt').focus(); return; }
   if(!checkQuota('img')) return;
 
+  /* Bắt đầu phiên mới: huỷ hiệu lực mọi vòng poll cũ + dọn timer còn sót */
+  jobToken++;
+  clearInterval(pollTimer);
+  pollTimer = null;
+
   imgModelLabel = $('imgModel').value === 'nanobanana' ? 'Nano Banana 2 Lite' : 'GPT-Image-2';
   busy = true;
   $('btnGo').disabled = true;
@@ -1136,28 +1190,36 @@ function createImageTaskFallback(models, i, input, promptNow){
 function pollTask(taskId, prompt){
   var tries = 0;
   var MAX_TRIES = 100; // ~5 phút
+  var myToken = jobToken;   // chỉ vòng poll của phiên hiện tại mới được ghi kết quả
   updateJob('đã vào hàng đợi...', 20);
 
-  pollTimer = setInterval(function(){
+  clearInterval(pollTimer);  // dọn sạch vòng poll cũ (nếu còn) trước khi mở vòng mới
+  var timer = setInterval(function(){
+    /* Phiên đã bị thay thế / huỷ → tự tắt, không ghi gì cả */
+    if(myToken !== jobToken){ clearInterval(timer); return; }
+
     tries++;
     if(tries > MAX_TRIES){
-      clearInterval(pollTimer);
+      clearInterval(timer);
       failJob('Quá thời gian chờ (5 phút). Thử lại hoặc kiểm tra lịch sử trên kie.ai.');
       return;
     }
     fetch(API_BASE + '/api/v1/jobs/recordInfo?taskId=' + encodeURIComponent(taskId), { headers: headers() })
       .then(function(r){ return r.json(); })
       .then(function(d){
+        if(myToken !== jobToken){ clearInterval(timer); return; }  // kiểm tra lại sau khi await
         var data = d.data || {};
         var state = data.state;
         if(state === 'success'){
-          clearInterval(pollTimer);
+          clearInterval(timer);
+          if(seenTaskIds[taskId]) return;   // đã ghi rồi → bỏ qua, tránh nhân bản ảnh
+          seenTaskIds[taskId] = 1;
           var urls = [];
           try{ urls = (JSON.parse(data.resultJson || '{}').resultUrls) || []; }catch(_){}
           if(!urls.length){ failJob('Tác vụ xong nhưng không nhận được link ảnh'); return; }
           finishJob(urls, prompt, data.creditsConsumed);
         } else if(state === 'fail'){
-          clearInterval(pollTimer);
+          clearInterval(timer);
           failJob('Tạo ảnh thất bại: ' + (data.failMsg || data.failCode || 'không rõ nguyên nhân'));
         } else {
           var pct = Math.min(92, 20 + (Number(data.progress) || tries * 2));
@@ -1167,6 +1229,7 @@ function pollTask(taskId, prompt){
       })
       .catch(function(){ /* lỗi mạng tạm — thử lại vòng sau */ });
   }, 3000);
+  pollTimer = timer;
 }
 
 /* ================= TIẾN TRÌNH ================= */
@@ -1181,6 +1244,8 @@ function updateJob(state, pct){
   $('jobBar').style.width = pct + '%';
 }
 function finishJob(urls, prompt, credits){
+  clearInterval(pollTimer);
+  pollTimer = null;
   $('jobBar').style.width = '100%';
   $('jobState').textContent = 'hoàn tất ✓';
   setTimeout(function(){ $('job').classList.remove('show'); }, 1200);
@@ -1195,7 +1260,9 @@ function finishJob(urls, prompt, credits){
   refreshCredits();
 }
 function failJob(msg){
+  jobToken++;                 // vô hiệu hoá mọi vòng poll đang chạy của phiên này
   clearInterval(pollTimer);
+  pollTimer = null;
   $('job').classList.remove('show');
   resetBtn();
   toast(msg, true);
@@ -1283,6 +1350,7 @@ document.addEventListener('keydown', function(e){
    ================================================================ */
 var LS_VHIST = 'taoanh_grokvideo_history';
 var vBusy = false, vPollTimer = null;
+var vJobToken = 0;
 var vRefs = [null, null, null, null, null]; // {dataUrl, uploadedUrl}
 var vChain = null; // {stage:1|2, prompt} — chuỗi tự động cho video 30s (2 đoạn 15s)
 var vLastEngine = 'grok'; // model của lần dựng đang chạy — lưu vào lịch sử
@@ -1485,6 +1553,9 @@ function generateVideo(){
   var refs = vRefs.filter(function(r){ return r; });
 
   vBusy = true;
+  vJobToken++;
+  clearInterval(vPollTimer);
+  vPollTimer = null;
   $('btnGoVid').disabled = true;
   $('btnGoVid').textContent = 'ĐANG DỰNG VIDEO...';
   showVJob(prompt, 'chuẩn bị...', 4);
@@ -1592,27 +1663,33 @@ function generateVideo(){
 }
 function pollVideoTask(taskId, prompt){
   var tries = 0, MAX_TRIES = 240; // ~12 phút — video lâu hơn ảnh
+  var myToken = vJobToken;
   updateVJob('đã vào hàng đợi...', 20);
-  vPollTimer = setInterval(function(){
+  clearInterval(vPollTimer);
+  var vtimer = setInterval(function(){
+    if(myToken !== vJobToken){ clearInterval(vtimer); return; }
     tries++;
     if(tries > MAX_TRIES){
-      clearInterval(vPollTimer);
+      clearInterval(vtimer);
       failVJob('Quá thời gian chờ (12 phút). Kiểm tra lịch sử trên kie.ai.');
       return;
     }
     fetch(API_BASE + '/api/v1/jobs/recordInfo?taskId=' + encodeURIComponent(taskId), { headers: headers() })
       .then(function(r){ return r.json(); })
       .then(function(d){
+        if(myToken !== vJobToken){ clearInterval(vtimer); return; }
         var data = d.data || {};
         var state = data.state;
         if(state === 'success'){
-          clearInterval(vPollTimer);
+          clearInterval(vtimer);
+          if(seenTaskIds[taskId]) return;
+          seenTaskIds[taskId] = 1;
           var urls = [];
           try{ urls = (JSON.parse(data.resultJson || '{}').resultUrls) || []; }catch(_){}
           if(!urls.length){ failVJob('Tác vụ xong nhưng không nhận được link video'); return; }
           finishVJob(urls, prompt, data.creditsConsumed, taskId);
         } else if(state === 'fail'){
-          clearInterval(vPollTimer);
+          clearInterval(vtimer);
           failVJob('Dựng video thất bại: ' + (data.failMsg || data.failCode || 'không rõ nguyên nhân'));
         } else {
           var pct = Math.min(92, 20 + (Number(data.progress) || tries * 0.7));
@@ -1622,6 +1699,7 @@ function pollVideoTask(taskId, prompt){
       })
       .catch(function(){ /* lỗi mạng tạm */ });
   }, 3000);
+  vPollTimer = vtimer;
 }
 function showVJob(prompt, state, pct){
   $('vJob').classList.add('show');
@@ -1635,6 +1713,8 @@ function updateVJob(state, pct){
   $('vJobBar').style.width = pct + '%';
 }
 function finishVJob(urls, prompt, credits, taskId){
+  clearInterval(vPollTimer);
+  vPollTimer = null;
   $('vJobBar').style.width = '100%';
   $('vJobState').textContent = 'hoàn tất ✓';
   setTimeout(function(){ $('vJob').classList.remove('show'); }, 1200);
@@ -1696,7 +1776,9 @@ function runExtend(taskId, prompt, extendAt, extendTimes, histLabel){
 }
 function failVJob(msg){
   vChain = null;
+  vJobToken++;
   clearInterval(vPollTimer);
+  vPollTimer = null;
   $('vJob').classList.remove('show');
   resetVBtn();
   toast(msg, true);
